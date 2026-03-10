@@ -1,0 +1,34 @@
+[bot]
+user = ""
+token = ""
+server_name = ""
+timezone_name = "UTC"
+log_level = "INFO"
+log_level_root = "WARNING"
+log_level_discord = "WARNING"
+
+[rcon]
+log_level = "INFO"
+host = "127.0.0.1"
+port = 27960
+password = ""
+recv_timeout = 0.25
+
+[gameinfo]
+enabled = true
+log_level = "INFO"
+channel_name = ""
+game_host = ""
+embed_title = "Current Map"
+delay = 5.0
+delay_no_updates = 60.0
+timeout = 5.0
+
+[mapcycle]
+enabled = true
+log_level = "INFO"
+channel_name = ""
+embed_title = "Map Cycle"
+delay = 3600.0
+timeout = 30.0
+file = ""

@@ -1,0 +1,16 @@
+[Unit]
+Description=UrT 4.3 Discord Bot
+After=urt43.service
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Type=exec
+CPUAffinity=2
+WorkingDirectory=%h/urt30discord
+ExecStart=uv run -m urt30discord %h/.config/urt30discord.toml
+Restart=on-failure
+RestartSec=5
+RestartSteps=5
+RestartMaxDelaySec=30
