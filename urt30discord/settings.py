@@ -123,5 +123,6 @@ logging.basicConfig(
 logging.getLogger().setLevel(bot.log_level_root)
 logging.getLogger("discord").setLevel(bot.log_level_discord)
 logging.getLogger("urt30arcon").setLevel(rcon.log_level)
+logging.getLogger("urt30discord").setLevel(bot.log_level)
 logging.getLogger("urt30discord.gameinfo").setLevel(gameinfo.log_level)
 logging.getLogger("urt30discord.mapcycle").setLevel(mapcycle.log_level)
