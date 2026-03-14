@@ -2,13 +2,13 @@
 
 ## Status
 
-The Discord updaters that post mapcycle and player updates to our `#mapcycle`
+Discord updaters that post map cycle and player updates to our `#mapcycle`
 channel in our Discord.
 
 ## Requirements
 
 - Urban Terror 4.3.4
-- Requires Python 3.14
+- [uv](https://docs.astral.sh/uv/)
 
 ## Configuration
 
@@ -25,7 +25,8 @@ dependency management.
 
     uv run -m urt30discord
 
-To set up as a `systemd` service, see the sample `etc/systemd/urt30discord.service` file.
+To set up as a `systemd` service, see the sample
+`etc/systemd/urt30discord.service` file.
 
 ## Developing
 
