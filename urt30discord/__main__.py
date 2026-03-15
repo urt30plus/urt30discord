@@ -11,7 +11,7 @@ async def start_bot() -> None:
     # defer import until there is a running event loop
     import urt30discord.main  # noqa: PLC0415
 
-    await urt30discord.main.Bot().run()
+    await urt30discord.main.run()
 
 
 try:

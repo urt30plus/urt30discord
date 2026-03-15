@@ -9,7 +9,7 @@ import aiofiles.os
 import discord
 from urt30arcon import AsyncRconClient, GameType
 
-from . import DiscordClient, DiscordEmbedUpdater
+from .core import DiscordClient, DiscordEmbedUpdater
 
 logger = logging.getLogger(__name__)
 

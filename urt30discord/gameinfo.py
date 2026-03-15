@@ -7,7 +7,7 @@ from typing import NamedTuple
 import discord
 from urt30arcon import AsyncRconClient, Game, Player
 
-from . import DiscordClient, DiscordEmbedUpdater
+from .core import DiscordClient, DiscordEmbedUpdater
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ server_name = ""
 timezone_name = "UTC"
 log_level = "INFO"
 log_level_root = "WARNING"
-log_level_discord = "WARNING"
+log_level_discord = "ERROR"
 
 [rcon]
 log_level = "INFO"

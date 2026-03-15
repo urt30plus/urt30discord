@@ -2,7 +2,7 @@
 
 ## Status
 
-Discord updaters that post map cycle and player updates to our `#mapcycle`
+Discord updaters that post mapcycle and game updates to our `#mapcycle`
 channel in our Discord.
 
 ## Requirements

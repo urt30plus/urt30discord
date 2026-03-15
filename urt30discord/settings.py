@@ -12,7 +12,7 @@ import tomllib
 import zoneinfo
 from pathlib import Path
 
-__version__ = "2026.03.10"
+__version__ = "2026.03.14"
 
 PACKAGE_ROOT = Path(__file__).parent
 PROJECT_ROOT = PACKAGE_ROOT.parent
@@ -79,7 +79,7 @@ class GameInfoSettings:
 
 
 @dataclasses.dataclass(frozen=True)
-class MapcycleSettings:
+class MapCycleSettings:
     enabled: bool
     log_level: str
     channel_name: str
@@ -111,7 +111,7 @@ if _custom_config_file:
 bot = BotSettings(**_config["bot"])
 rcon = RconSettings(**_config["rcon"])
 gameinfo = GameInfoSettings(**_config["gameinfo"])
-mapcycle = MapcycleSettings(**_config["mapcycle"])
+mapcycle = MapCycleSettings(**_config["mapcycle"])
 
 if not (gameinfo.enabled or mapcycle.enabled):
     # TODO: better message
