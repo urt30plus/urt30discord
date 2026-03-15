@@ -8,7 +8,7 @@ WantedBy=default.target
 [Service]
 Type=exec
 WorkingDirectory=%h/urt30discord
-ExecStart=uv run -m urt30discord %h/.config/urt30discord.toml
+ExecStart=%h/urt30discord/.venv/bin/python -m urt30discord %h/.config/urt30discord.toml
 Restart=on-failure
 RestartSec=5
 RestartSteps=5
