@@ -21,11 +21,10 @@ class MapCycleUpdater(DiscordEmbedUpdater):
         self,
         discord_client: DiscordClient,
         rcon_client: AsyncRconClient,
-        channel_name: str,
         embed_title: str,
         mapcycle_file: Path,
     ) -> None:
-        super().__init__(discord_client, rcon_client, channel_name, embed_title)
+        super().__init__(discord_client, rcon_client, embed_title)
         self.mapcycle_file = mapcycle_file
         self.last_mtime = 0.0
 

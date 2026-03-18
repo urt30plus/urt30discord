@@ -25,7 +25,7 @@ async def run() -> None:
     logger.info(rcon_client)
     discord_client = DiscordClient(
         bot_user=settings.bot.user,
-        server_name=settings.bot.server_name,
+        channel_id=settings.bot.channel_id,
     )
     try:
         async with asyncio.TaskGroup() as tg:
@@ -55,7 +55,6 @@ async def update_gameinfo(
     updater = GameInfoUpdater(
         discord_client=discord_client,
         rcon_client=rcon_client,
-        channel_name=settings.gameinfo.channel_name,
         embed_title=settings.gameinfo.embed_title,
         game_host=settings.gameinfo.game_host,
     )
@@ -98,7 +97,6 @@ async def update_mapcycle(
     updater = MapCycleUpdater(
         discord_client=discord_client,
         rcon_client=rcon_client,
-        channel_name=settings.mapcycle.channel_name,
         embed_title=settings.mapcycle.embed_title,
         mapcycle_file=mapcycle_file,
     )

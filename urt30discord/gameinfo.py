@@ -38,11 +38,10 @@ class GameInfoUpdater(DiscordEmbedUpdater):
         self,
         discord_client: DiscordClient,
         rcon_client: AsyncRconClient,
-        channel_name: str,
         embed_title: str,
         game_host: str | None = None,
     ) -> None:
-        super().__init__(discord_client, rcon_client, channel_name, embed_title)
+        super().__init__(discord_client, rcon_client, embed_title)
         self._last_game: Game | None = None
         self._next_map = NextMapCache(None, -1.0)
         self._game_host = game_host

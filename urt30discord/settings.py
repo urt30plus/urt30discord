@@ -3,13 +3,10 @@ Bot settings and configuration.
 """
 
 import dataclasses
-import datetime
-import functools
 import logging
 import os
 import sys
 import tomllib
-import zoneinfo
 from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).parent
@@ -22,18 +19,10 @@ TRUE_VALUES = frozenset(["true", "1", "yes", "on", "enable"])
 class BotSettings:
     user: str
     token: str
-    server_name: str
-    timezone_name: str
+    channel_id: int
     log_level: str
     log_level_root: str
     log_level_discord: str
-
-    @functools.cached_property
-    def timezone(self) -> zoneinfo.ZoneInfo:
-        return zoneinfo.ZoneInfo(self.timezone_name)
-
-    def now(self) -> datetime.datetime:
-        return datetime.datetime.now(tz=self.timezone)
 
     def __post_init__(self) -> None:
         errors = []
@@ -41,8 +30,8 @@ class BotSettings:
             errors.append("user")
         if not self.token:
             errors.append("token")
-        if not self.server_name:
-            errors.append("server_name")
+        if not self.channel_id:
+            errors.append("channel_id")
         if errors:
             raise RuntimeError("bot_config_missing", errors)
 
@@ -64,31 +53,25 @@ class RconSettings:
 class GameInfoSettings:
     enabled: bool
     log_level: str
-    channel_name: str
     game_host: str
     embed_title: str
     delay: float
     delay_no_updates: float
     timeout: float
 
-    def __post_init__(self) -> None:
-        if not self.channel_name:
-            raise RuntimeError("gameinfo_config_missing", ["channel_name"])
-
 
 @dataclasses.dataclass(frozen=True)
 class MapCycleSettings:
     enabled: bool
     log_level: str
-    channel_name: str
     embed_title: str
     delay: float
     timeout: float
     file: str
 
     def __post_init__(self) -> None:
-        if not self.channel_name:
-            raise RuntimeError("gameinfo_config_missing", ["channel_name"])
+        if not self.file:
+            raise RuntimeError("gameinfo_config_missing", ["file"])
 
 
 with DEFAULT_CONFIG.open(mode="rb") as fp:
