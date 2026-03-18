@@ -27,9 +27,9 @@ async def run() -> None:
         bot_user=settings.bot.user,
         server_name=settings.bot.server_name,
     )
-    await discord_client.login(settings.bot.token)
     try:
         async with asyncio.TaskGroup() as tg:
+            tg.create_task(discord_client.start(settings.bot.token))
             if settings.mapcycle.enabled:
                 tg.create_task(update_mapcycle(rcon_client, discord_client))
             else:
@@ -39,19 +39,21 @@ async def run() -> None:
                 tg.create_task(update_gameinfo(rcon_client, discord_client))
             else:
                 logger.warning("game updates are not enabled")
-    except Exception, CancelledError:
+    except KeyboardInterrupt, CancelledError:
+        pass
+    finally:
         logger.info("cleanup has been triggered")
         await asyncio.shield(discord_client.close())
         rcon_client.close()
-    finally:
         logger.info("shutdown complete")
 
 
 async def update_gameinfo(
-    rcon_client: AsyncRconClient, api_client: DiscordClient
+    rcon_client: AsyncRconClient, discord_client: DiscordClient
 ) -> None:
+    await discord_client.bot_running.wait()
     updater = GameInfoUpdater(
-        api_client=api_client,
+        discord_client=discord_client,
         rcon_client=rcon_client,
         channel_name=settings.gameinfo.channel_name,
         embed_title=settings.gameinfo.embed_title,
@@ -80,8 +82,9 @@ async def update_gameinfo(
 
 
 async def update_mapcycle(
-    rcon_client: AsyncRconClient, api_client: DiscordClient
+    rcon_client: AsyncRconClient, discord_client: DiscordClient
 ) -> None:
+    await discord_client.bot_running.wait()
     if mapcycle_file := settings.mapcycle.file:
         mapcycle_file = Path(mapcycle_file)
     else:
@@ -93,7 +96,7 @@ async def update_mapcycle(
         )
         return
     updater = MapCycleUpdater(
-        api_client=api_client,
+        discord_client=discord_client,
         rcon_client=rcon_client,
         channel_name=settings.mapcycle.channel_name,
         embed_title=settings.mapcycle.embed_title,

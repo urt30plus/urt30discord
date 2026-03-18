@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import logging
 
 import discord
@@ -17,14 +18,14 @@ class DiscordClient(discord.Client):
         bot_user: str,
         server_name: str,
     ) -> None:
-        super().__init__(intents=discord.Intents.all())
+        super().__init__(intents=discord.Intents.default())
         self.bot_user = bot_user
         self.server_name = server_name
         self._guild: discord.Guild | None = None
         self._channel_cache: dict[str, discord.TextChannel] = {}
+        self.bot_running = asyncio.Event()
 
-    async def login(self, token: str) -> None:
-        await super().login(token)
+    async def setup_hook(self) -> None:
         async for guild in super().fetch_guilds():
             if guild.name == self.server_name:
                 self._guild = guild
@@ -32,6 +33,7 @@ class DiscordClient(discord.Client):
         else:
             msg = f"Discord Server not found: {self.server_name}"
             raise DiscordClientError(msg)
+        self.bot_running.set()
 
     async def fetch_embed_message(
         self,
@@ -80,19 +82,19 @@ class DiscordClient(discord.Client):
 class DiscordEmbedUpdater(abc.ABC):
     def __init__(
         self,
-        api_client: DiscordClient,
+        discord_client: DiscordClient,
         rcon_client: AsyncRconClient,
         channel_name: str,
         embed_title: str,
     ) -> None:
-        self.api_client = api_client
+        self.discord_client = discord_client
         self.rcon_client = rcon_client
         self.channel_name = channel_name
         self.embed_title = embed_title
         self._channel: discord.TextChannel | None = None
 
     async def fetch_embed_message(self) -> discord.Message | None:
-        channel, message = await self.api_client.fetch_embed_message(
+        channel, message = await self.discord_client.fetch_embed_message(
             self.channel_name, self.embed_title
         )
         self._channel = channel
