@@ -1,6 +1,5 @@
 import abc
 import logging
-from typing import Any
 
 import discord
 from urt30arcon import AsyncRconClient
@@ -17,11 +16,8 @@ class DiscordClient(discord.Client):
         self,
         bot_user: str,
         server_name: str,
-        **kwargs: Any,
     ) -> None:
-        if "intents" not in kwargs:
-            kwargs["intents"] = discord.Intents.all()
-        super().__init__(**kwargs)
+        super().__init__(intents=discord.Intents.all())
         self.bot_user = bot_user
         self.server_name = server_name
         self._guild: discord.Guild | None = None
