@@ -6,7 +6,7 @@ from pathlib import Path
 
 from urt30arcon import AsyncRconClient
 
-from . import settings
+from . import __version__, settings
 from .core import DiscordClient
 from .gameinfo import GameInfoUpdater
 from .mapcycle import MapCycleUpdater
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 async def run() -> None:
-    logger.info("v%s - %s", settings.__version__, sys.version)
+    logger.info("v%s - %s", __version__, sys.version)
     rcon_client = await AsyncRconClient.create_client(
         host=settings.rcon.host,
         port=settings.rcon.port,

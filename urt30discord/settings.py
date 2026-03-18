@@ -12,8 +12,6 @@ import tomllib
 import zoneinfo
 from pathlib import Path
 
-__version__ = "2026.03.17"
-
 PACKAGE_ROOT = Path(__file__).parent
 PROJECT_ROOT = PACKAGE_ROOT.parent
 DEFAULT_CONFIG = PROJECT_ROOT / "etc" / "urt30discord.toml"
