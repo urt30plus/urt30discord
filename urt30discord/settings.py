@@ -12,7 +12,7 @@ import tomllib
 import zoneinfo
 from pathlib import Path
 
-__version__ = "2026.03.14"
+__version__ = "2026.03.17"
 
 PACKAGE_ROOT = Path(__file__).parent
 PROJECT_ROOT = PACKAGE_ROOT.parent
