@@ -1,6 +1,7 @@
 [bot]
 user = ""
 token = ""
+server_id = 0
 channel_id = 0
 log_level = "INFO"
 log_level_root = "WARNING"

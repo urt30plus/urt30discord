@@ -5,7 +5,12 @@ import logging
 import discord
 from urt30arcon import AsyncRconClient
 
+from . import settings
+
 logger = logging.getLogger(__name__)
+
+GUILD = discord.Object(id=settings.bot.server_id)
+CMD_RESP_EXPIRY = 10.0
 
 
 class DiscordClientError(Exception):
@@ -19,6 +24,7 @@ class DiscordClient(discord.Client):
         channel_id: int,
     ) -> None:
         super().__init__(intents=discord.Intents.default())
+        self.tree = discord.app_commands.CommandTree(self)
         self.bot_user = bot_user
         self.channel_id = channel_id
         self._channel: discord.TextChannel | None = None
@@ -38,6 +44,9 @@ class DiscordClient(discord.Client):
         else:
             msg = f"Discord Channel not a TextChannel: {channel!r}"
             raise DiscordClientError(msg)
+        logger.info("Logged on as: %s", self.user)
+        self.tree.copy_global_to(guild=GUILD)
+        await self.tree.sync(guild=GUILD)
         self.bot_running.set()
 
     async def fetch_embed_message(
@@ -112,3 +121,22 @@ class DiscordEmbedUpdater(abc.ABC):
             f"(channel_name={self.discord_client.channel.name!r}, "
             f"embed_title={self.embed_title!r})"
         )
+
+
+discord_client = DiscordClient(
+    bot_user=settings.bot.user, channel_id=settings.bot.channel_id
+)
+
+
+@discord_client.tree.command(name="bot-restart", guild=GUILD)
+async def bot_restart(interaction: discord.Interaction) -> None:
+    """Restart the Bot.
+
+    Args:
+        interaction: discord.Interaction
+    """
+    await interaction.response.send_message(
+        "not implemented yet",
+        ephemeral=True,
+        delete_after=CMD_RESP_EXPIRY,
+    )

@@ -7,7 +7,7 @@ from pathlib import Path
 from urt30arcon import AsyncRconClient
 
 from . import __version__, settings
-from .core import DiscordClient
+from .core import discord_client
 from .gameinfo import GameInfoUpdater
 from .mapcycle import MapCycleUpdater
 
@@ -23,20 +23,16 @@ async def run() -> None:
         recv_timeout=settings.rcon.recv_timeout,
     )
     logger.info(rcon_client)
-    discord_client = DiscordClient(
-        bot_user=settings.bot.user,
-        channel_id=settings.bot.channel_id,
-    )
     try:
         async with asyncio.TaskGroup() as tg:
             tg.create_task(discord_client.start(settings.bot.token))
             if settings.mapcycle.enabled:
-                tg.create_task(update_mapcycle(rcon_client, discord_client))
+                tg.create_task(update_mapcycle(rcon_client))
             else:
                 logger.warning("mapcycle updates are not enabled")
 
             if settings.gameinfo.enabled:
-                tg.create_task(update_gameinfo(rcon_client, discord_client))
+                tg.create_task(update_gameinfo(rcon_client))
             else:
                 logger.warning("game updates are not enabled")
     except KeyboardInterrupt, CancelledError:
@@ -48,9 +44,7 @@ async def run() -> None:
         logger.info("shutdown complete")
 
 
-async def update_gameinfo(
-    rcon_client: AsyncRconClient, discord_client: DiscordClient
-) -> None:
+async def update_gameinfo(rcon_client: AsyncRconClient) -> None:
     await discord_client.bot_running.wait()
     updater = GameInfoUpdater(
         discord_client=discord_client,
@@ -80,9 +74,7 @@ async def update_gameinfo(
         await asyncio.sleep(delay if was_updated else delay_no_updates)
 
 
-async def update_mapcycle(
-    rcon_client: AsyncRconClient, discord_client: DiscordClient
-) -> None:
+async def update_mapcycle(rcon_client: AsyncRconClient) -> None:
     await discord_client.bot_running.wait()
     if mapcycle_file := settings.mapcycle.file:
         mapcycle_file = Path(mapcycle_file)

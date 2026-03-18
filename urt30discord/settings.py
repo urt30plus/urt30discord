@@ -19,6 +19,7 @@ TRUE_VALUES = frozenset(["true", "1", "yes", "on", "enable"])
 class BotSettings:
     user: str
     token: str
+    server_id: int
     channel_id: int
     log_level: str
     log_level_root: str
@@ -30,6 +31,8 @@ class BotSettings:
             errors.append("user")
         if not self.token:
             errors.append("token")
+        if not self.server_id:
+            errors.append("server_id")
         if not self.channel_id:
             errors.append("channel_id")
         if errors:
