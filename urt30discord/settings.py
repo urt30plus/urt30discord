@@ -11,19 +11,18 @@ from pathlib import Path
 
 PACKAGE_ROOT = Path(__file__).parent
 PROJECT_ROOT = PACKAGE_ROOT.parent
-DEFAULT_CONFIG = PROJECT_ROOT / "etc" / "urt30discord.toml"
 TRUE_VALUES = frozenset(["true", "1", "yes", "on", "enable"])
 
 
 @dataclasses.dataclass(frozen=True)
 class BotSettings:
-    user: str
-    token: str = dataclasses.field(repr=False)
-    server_id: int
-    channel_id: int
-    log_level: str
-    log_level_root: str
-    log_level_discord: str
+    user: str = ""
+    token: str = dataclasses.field(default="", repr=False)
+    server_id: int = 0
+    channel_id: int = 0
+    log_level: str = "INFO"
+    log_level_root: str = "WARNING"
+    log_level_discord: str = "ERROR"
 
     def __post_init__(self) -> None:
         errors = []
@@ -41,11 +40,11 @@ class BotSettings:
 
 @dataclasses.dataclass(frozen=True)
 class RconSettings:
-    host: str
-    port: int
-    password: str = dataclasses.field(repr=False)
-    recv_timeout: float
-    log_level: str
+    host: str = "127.0.0.1"
+    port: int = 27960
+    password: str = dataclasses.field(default="", repr=False)
+    recv_timeout: float = 0.25
+    log_level: str = "INFO"
 
     def __post_init__(self) -> None:
         if not self.password:
@@ -54,43 +53,39 @@ class RconSettings:
 
 @dataclasses.dataclass(frozen=True)
 class GameInfoSettings:
-    enabled: bool
-    log_level: str
-    game_host: str
-    embed_title: str
-    delay: float
-    delay_no_updates: float
-    timeout: float
+    enabled: bool = True
+    log_level: str = "INFO"
+    game_host: str = ""
+    embed_title: str = "Current Map"
+    delay: float = 5.0
+    delay_no_updates: float = 60.0
+    timeout: float = 5.0
 
 
 @dataclasses.dataclass(frozen=True)
 class MapCycleSettings:
-    enabled: bool
-    log_level: str
-    embed_title: str
-    delay: float
-    timeout: float
-    file: str
+    enabled: bool = True
+    log_level: str = "INFO"
+    embed_title: str = "Map Cycle"
+    delay: float = 3600.0
+    timeout: float = 30.0
+    file: str = ""
 
     def __post_init__(self) -> None:
         if not self.file:
             raise RuntimeError("gameinfo_config_missing", ["file"])
 
 
-with DEFAULT_CONFIG.open(mode="rb") as fp:
+if "URT30DISCORD_CONFIG_FILE" in os.environ:
+    _config_file = Path(os.environ["URT30DISCORD_CONFIG_FILE"])
+elif len(sys.argv) > 1:
+    _config_file = Path(sys.argv[1])
+else:
+    raise RuntimeError("missing_config_file")
+
+with _config_file.open(mode="rb") as fp:
     _config = tomllib.load(fp)
 
-if "URT30DISCORD_CONFIG_FILE" in os.environ:
-    _custom_config_file = Path(os.environ["URT30DISCORD_CONFIG_FILE"])
-elif len(sys.argv) > 1:
-    _custom_config_file = Path(sys.argv[1])
-else:
-    _custom_config_file = None
-
-if _custom_config_file:
-    with _custom_config_file.open(mode="rb") as fp:
-        _custom_config = tomllib.load(fp)
-    _config |= _custom_config
 
 bot = BotSettings(**_config["bot"])
 rcon = RconSettings(**_config["rcon"])

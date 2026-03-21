@@ -13,8 +13,49 @@ channel in our Discord.
 ## Configuration
 
 The bot uses a TOML configuration file that can be passed
-as the first argument to the program. See `etc/urt30discord.toml`
-for the settings.
+as the first argument to the program or by setting an OS
+environment variable named `URT30DISCORD_CONFIG_FILE` to
+the full path to the config file.
+
+See below for an example file. Those commented as required
+must be provided in the config file. The other values are
+defaults and only need to be provided if you want to override
+those values.
+
+```toml
+[bot]
+user = "mybot#1234"  # required
+token = "xxxx"  # required
+server_id = 123456789  # required
+channel_id = 987654321  # required
+log_level = "INFO"
+log_level_root = "WARNING"
+log_level_discord = "ERROR"
+
+[rcon]
+log_level = "INFO"
+host = "127.0.0.1"
+port = 27960
+password = "supersekret"  # required
+recv_timeout = 0.25
+
+[gameinfo]
+enabled = true
+log_level = "INFO"
+game_host = "game.urt-30plus.org"  # required
+embed_title = "Current Map"
+delay = 5.0
+delay_no_updates = 60.0
+timeout = 5.0
+
+[mapcycle]
+enabled = true
+log_level = "INFO"
+embed_title = "Map Cycle"
+delay = 3600.0
+timeout = 30.0
+file = '/full/path/to/mapcycle.txt'  # required
+```
 
 ## Running
 
