@@ -1,9 +1,11 @@
 [Unit]
 Description=UrT 4.3 Discord Bot
 After=urt43.service
+StartLimitIntervalSec=120
+StartLimitBurst=20
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
 
 [Service]
 Type=exec
@@ -15,5 +17,3 @@ ExecStartPre=-%h/.local/bin/uv sync
 ExecStart=%h/urt30discord/.venv/bin/python -m urt30discord %h/.config/urt30discord.toml
 Restart=on-failure
 RestartSec=5
-RestartSteps=5
-RestartMaxDelaySec=30
