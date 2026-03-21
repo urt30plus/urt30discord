@@ -35,8 +35,6 @@ async def run() -> None:
                 tg.create_task(update_gameinfo(rcon_client))
             else:
                 logger.warning("game updates are not enabled")
-    except KeyboardInterrupt, CancelledError:
-        pass
     finally:
         logger.info("cleanup has been triggered")
         await asyncio.shield(discord_client.close())
