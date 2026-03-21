@@ -1,5 +1,4 @@
 import abc
-import asyncio
 import logging
 
 import discord
@@ -28,7 +27,6 @@ class DiscordClient(discord.Client):
         self.bot_user = bot_user
         self.channel_id = channel_id
         self._channel: discord.TextChannel | None = None
-        self.bot_running = asyncio.Event()
 
     @property
     def channel(self) -> discord.TextChannel:
@@ -47,7 +45,6 @@ class DiscordClient(discord.Client):
         logger.info("Logged on as: %s", self.user)
         self.tree.copy_global_to(guild=GUILD)
         await self.tree.sync(guild=GUILD)
-        self.bot_running.set()
 
     async def fetch_embed_message(
         self,

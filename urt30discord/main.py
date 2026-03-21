@@ -45,7 +45,7 @@ async def run() -> None:
 
 
 async def update_gameinfo(rcon_client: AsyncRconClient) -> None:
-    await discord_client.bot_running.wait()
+    await discord_client.wait_until_ready()
     updater = GameInfoUpdater(
         discord_client=discord_client,
         rcon_client=rcon_client,
@@ -75,7 +75,7 @@ async def update_gameinfo(rcon_client: AsyncRconClient) -> None:
 
 
 async def update_mapcycle(rcon_client: AsyncRconClient) -> None:
-    await discord_client.bot_running.wait()
+    await discord_client.wait_until_ready()
     if mapcycle_file := settings.mapcycle.file:
         mapcycle_file = Path(mapcycle_file)
     else:
