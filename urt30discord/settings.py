@@ -18,7 +18,7 @@ TRUE_VALUES = frozenset(["true", "1", "yes", "on", "enable"])
 @dataclasses.dataclass(frozen=True)
 class BotSettings:
     user: str
-    token: str
+    token: str = dataclasses.field(repr=False)
     server_id: int
     channel_id: int
     log_level: str
@@ -43,7 +43,7 @@ class BotSettings:
 class RconSettings:
     host: str
     port: int
-    password: str
+    password: str = dataclasses.field(repr=False)
     recv_timeout: float
     log_level: str
 
