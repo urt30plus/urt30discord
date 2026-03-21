@@ -64,7 +64,7 @@ dependency management.
 
 ### Run the module
 
-    uv run -m urt30discord
+    uv run -m urt30discord /path/to/config.toml
 
 To set up as a `systemd` service, see the sample service file below.
 
@@ -97,7 +97,7 @@ RestartSec=5
 The following will create a `.venv` directory and install both the
 runtime and development dependencies:
 
-    uv sync --upgrade
+    uv sync
 
 ### Install pre-commit
 
@@ -108,10 +108,6 @@ Recommend installing as a tool:
 ### Install the pre-commit hooks
 
     pre-commit install
-
-### Set the appropriate Environment Variables
-
-Create a `.env` file in the project root with the appropriate settings
 
 ### Run the checks
 
