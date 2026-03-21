@@ -25,8 +25,29 @@ dependency management.
 
     uv run -m urt30discord
 
-To set up as a `systemd` service, see the sample
-`etc/systemd/urt30discord.service` file.
+To set up as a `systemd` service, see the sample service file below.
+
+```systemd
+[Unit]
+Description=UrT 4.3 Discord Bot
+After=urt43.service
+StartLimitIntervalSec=120
+StartLimitBurst=20
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=exec
+CPUAffinity=1-2
+Environment=UV_COMPILE_BYTECODE=1 UV_NO_DEV=1 UV_FROZEN=1 PYTHONUNBUFFERED=1
+WorkingDirectory=%h/urt30discord
+ExecStartPre=-git pull
+ExecStartPre=-%h/.local/bin/uv sync
+ExecStart=%h/urt30discord/.venv/bin/python -m urt30discord %h/.config/urt30discord.toml
+Restart=on-failure
+RestartSec=5
+```
 
 ## Developing
 
