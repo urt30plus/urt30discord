@@ -23,7 +23,7 @@ dev = [
 
 [tool.ruff]
 target-version = "py314"
-extend-exclude = [".*", "etc", "temp"]
+extend-exclude = [".*", "temp"]
 
 [tool.ruff.format]
 preview = true
