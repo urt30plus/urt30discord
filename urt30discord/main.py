@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-from asyncio import CancelledError
 from pathlib import Path
 
 from urt30arcon import AsyncRconClient
