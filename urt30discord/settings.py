@@ -2,56 +2,41 @@
 Bot settings and configuration.
 """
 
-import dataclasses
 import logging
 import os
 import sys
 import tomllib
 from pathlib import Path
+from typing import Annotated
+
+from pydantic import BaseModel, Field
+
+type DiscordUser = Annotated[str, Field(pattern=r"^.*#\d+$")]
+type Snowflake = Annotated[int, Field(gt=0)]
 
 PACKAGE_ROOT = Path(__file__).parent
 PROJECT_ROOT = PACKAGE_ROOT.parent
 
 
-@dataclasses.dataclass(frozen=True)
-class BotSettings:
-    user: str = ""
-    token: str = dataclasses.field(default="", repr=False)
-    server_id: int = 0
-    channel_id: int = 0
+class BotSettings(BaseModel, frozen=True):
+    user: DiscordUser
+    token: Annotated[str, Field(repr=False)]
+    server_id: Snowflake
+    channel_id: Snowflake
     log_level: str = "INFO"
     log_level_root: str = "WARNING"
     log_level_discord: str = "ERROR"
 
-    def __post_init__(self) -> None:
-        errors = []
-        if not self.user:
-            errors.append("user")
-        if not self.token:
-            errors.append("token")
-        if not self.server_id:
-            errors.append("server_id")
-        if not self.channel_id:
-            errors.append("channel_id")
-        if errors:
-            raise RuntimeError("bot_config_missing", errors)
 
-
-@dataclasses.dataclass(frozen=True)
-class RconSettings:
+class RconSettings(BaseModel, frozen=True):
     host: str = "127.0.0.1"
-    port: int = 27960
-    password: str = dataclasses.field(default="", repr=False)
+    port: Annotated[int, Field(ge=0, le=65535)] = 27960
+    password: Annotated[str, Field(repr=False)]
     recv_timeout: float = 0.25
     log_level: str = "INFO"
 
-    def __post_init__(self) -> None:
-        if not self.password:
-            raise RuntimeError("rcon_config_missing", ["password"])
 
-
-@dataclasses.dataclass(frozen=True)
-class GameInfoSettings:
+class GameInfoSettings(BaseModel, frozen=True):
     enabled: bool = True
     log_level: str = "INFO"
     game_host: str = ""
@@ -61,18 +46,13 @@ class GameInfoSettings:
     timeout: float = 5.0
 
 
-@dataclasses.dataclass(frozen=True)
-class MapCycleSettings:
+class MapCycleSettings(BaseModel, frozen=True):
     enabled: bool = True
     log_level: str = "INFO"
     embed_title: str = "Map Cycle"
     delay: float = 3600.0
     timeout: float = 30.0
-    file: str = ""
-
-    def __post_init__(self) -> None:
-        if not self.file:
-            raise RuntimeError("gameinfo_config_missing", ["file"])
+    file: str
 
 
 if "URT30DISCORD_CONFIG_FILE" in os.environ:
