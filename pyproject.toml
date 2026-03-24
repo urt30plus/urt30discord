@@ -60,4 +60,4 @@ select = [
     "UP",  # pyupgrade
     "W",  # pycodestyle (warnings)
 ]
-ignore = ["ISC001", "TC002", "TC003"]
+ignore = ["ASYNC109", "ISC001", "TC002", "TC003"]
