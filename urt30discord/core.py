@@ -1,4 +1,5 @@
 import abc
+import asyncio
 import logging
 
 import discord
@@ -125,15 +126,17 @@ discord_client = DiscordClient(
 )
 
 
-@discord_client.tree.command(name="bot-restart", guild=GUILD)
-async def bot_restart(interaction: discord.Interaction) -> None:
-    """Restart the Bot.
+@discord_client.tree.command(name="bot-stop", guild=GUILD)
+async def bot_stop(interaction: discord.Interaction) -> None:
+    """Stops the bot (and possibly restarts it).
 
     Args:
         interaction: discord.Interaction
     """
     await interaction.response.send_message(
-        "not implemented yet",
+        "stopping...",
         ephemeral=True,
-        delete_after=CMD_RESP_EXPIRY,
+        delete_after=1.5,
     )
+    await asyncio.sleep(3.0)
+    raise SystemExit(3)
