@@ -3,10 +3,8 @@ import logging
 import sys
 from pathlib import Path
 
-from urt30arcon import AsyncRconClient
-
 from . import __version__, settings
-from .core import discord_client
+from .core import DiscordClient, discord_client
 from .gameinfo import GameInfoUpdater
 from .mapcycle import MapCycleUpdater
 
@@ -15,37 +13,27 @@ logger = logging.getLogger(__name__)
 
 async def run() -> None:
     logger.info("v%s - %s", __version__, sys.version)
-    rcon_client = await AsyncRconClient.create_client(
-        host=settings.rcon.host,
-        port=settings.rcon.port,
-        password=settings.rcon.password,
-        recv_timeout=settings.rcon.recv_timeout,
-    )
-    logger.info(rcon_client)
     try:
         async with asyncio.TaskGroup() as tg:
             tg.create_task(discord_client.start(settings.bot.token))
             if settings.mapcycle.enabled:
-                tg.create_task(update_mapcycle(rcon_client))
+                tg.create_task(update_mapcycle(discord_client))
             else:
                 logger.warning("mapcycle updates are not enabled")
 
             if settings.gameinfo.enabled:
-                tg.create_task(update_gameinfo(rcon_client))
+                tg.create_task(update_gameinfo(discord_client))
             else:
                 logger.warning("game updates are not enabled")
     finally:
-        logger.info("cleanup has been triggered")
-        await asyncio.shield(discord_client.close())
-        rcon_client.close()
+        await discord_client.close()
         logger.info("shutdown complete")
 
 
-async def update_gameinfo(rcon_client: AsyncRconClient) -> None:
-    await discord_client.wait_until_ready()
+async def update_gameinfo(client: DiscordClient) -> None:
+    await client.wait_until_ready()
     updater = GameInfoUpdater(
-        discord_client=discord_client,
-        rcon_client=rcon_client,
+        client=client,
         embed_title=settings.gameinfo.embed_title,
         game_host=settings.gameinfo.game_host,
     )
@@ -71,12 +59,12 @@ async def update_gameinfo(rcon_client: AsyncRconClient) -> None:
         await asyncio.sleep(delay if was_updated else delay_no_updates)
 
 
-async def update_mapcycle(rcon_client: AsyncRconClient) -> None:
-    await discord_client.wait_until_ready()
+async def update_mapcycle(client: DiscordClient) -> None:
+    await client.wait_until_ready()
     if mapcycle_file := settings.mapcycle.file:
         mapcycle_file = Path(mapcycle_file)
     else:
-        mapcycle_file = await rcon_client.mapcycle_file()
+        mapcycle_file = await client.rcon.mapcycle_file()
     if not mapcycle_file or not mapcycle_file.exists():
         logger.warning(
             "mapcycle updates disabled, file does not exist: %s",
@@ -84,8 +72,7 @@ async def update_mapcycle(rcon_client: AsyncRconClient) -> None:
         )
         return
     updater = MapCycleUpdater(
-        discord_client=discord_client,
-        rcon_client=rcon_client,
+        client=client,
         embed_title=settings.mapcycle.embed_title,
         mapcycle_file=mapcycle_file,
     )

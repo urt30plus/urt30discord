@@ -5,7 +5,7 @@ import time
 from typing import NamedTuple
 
 import discord
-from urt30arcon import AsyncRconClient, Game, Player
+from urt30arcon import Game, Player
 
 from .core import DiscordClient, DiscordEmbedUpdater
 
@@ -36,12 +36,11 @@ class NextMapCache(NamedTuple):
 class GameInfoUpdater(DiscordEmbedUpdater):
     def __init__(
         self,
-        discord_client: DiscordClient,
-        rcon_client: AsyncRconClient,
+        client: DiscordClient,
         embed_title: str,
         game_host: str | None = None,
     ) -> None:
-        super().__init__(discord_client, rcon_client, embed_title)
+        super().__init__(client, embed_title)
         self._last_game: Game | None = None
         self._next_map = NextMapCache(None, -1.0)
         self._game_host = game_host
@@ -57,7 +56,7 @@ class GameInfoUpdater(DiscordEmbedUpdater):
         else:
             next_map = await self.fetch_next_map(game)
             embed = create_server_embed(
-                game, next_map, self.embed_title, self._game_host, self.rcon_client.port
+                game, next_map, self.embed_title, self._game_host, self.client.rcon.port
             )
             result = await self._update_or_create_if_needed(message, embed)
 
@@ -69,7 +68,7 @@ class GameInfoUpdater(DiscordEmbedUpdater):
     async def fetch_game_info(self) -> Game | None:
         for _ in range(3):
             try:
-                return await self.rcon_client.game_info()
+                return await self.client.rcon.game_info()
             except LookupError:
                 continue
             except Exception:
@@ -85,7 +84,7 @@ class GameInfoUpdater(DiscordEmbedUpdater):
             and self._next_map.expires > now
         ):
             return self._next_map.name
-        if next_map := await self.rcon_client.next_map():
+        if next_map := await self.client.rcon.next_map():
             if next_map != self._next_map.name:
                 logger.info("Updating next map from %s to %s", self._next_map, next_map)
             self._next_map = NextMapCache(next_map, now + 30.0)

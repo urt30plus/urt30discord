@@ -28,6 +28,12 @@ class DiscordClient(discord.Client):
         self.bot_user = bot_user
         self.channel_id = channel_id
         self._channel: discord.TextChannel | None = None
+        self.rcon = AsyncRconClient(
+            host=settings.rcon.host,
+            port=settings.rcon.port,
+            password=settings.rcon.password,
+            recv_timeout=settings.rcon.recv_timeout,
+        )
 
     @property
     def channel(self) -> discord.TextChannel:
@@ -62,27 +68,25 @@ class DiscordClient(discord.Client):
 
         return self.channel, None
 
+    async def close(self) -> None:
+        await super().close()
+        self.rcon.close()
+
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__}(bot_user={self.bot_user!r})"
 
 
 class DiscordEmbedUpdater(abc.ABC):
-    def __init__(
-        self,
-        discord_client: DiscordClient,
-        rcon_client: AsyncRconClient,
-        embed_title: str,
-    ) -> None:
-        self.discord_client = discord_client
-        self.rcon_client = rcon_client
+    def __init__(self, client: DiscordClient, embed_title: str) -> None:
+        self.client = client
         self.embed_title = embed_title
 
     async def fetch_embed_message(self) -> discord.Message | None:
-        _, message = await self.discord_client.fetch_embed_message(self.embed_title)
+        _, message = await self.client.fetch_embed_message(self.embed_title)
         return message
 
     async def new_message(self, embed: discord.Embed) -> discord.Message:
-        return await self.discord_client.channel.send(embed=embed)
+        return await self.client.channel.send(embed=embed)
 
     @abc.abstractmethod
     async def update(self) -> bool:
@@ -106,7 +110,7 @@ class DiscordEmbedUpdater(abc.ABC):
         else:
             logger.info(
                 "Sending new message embed to channel %s: %s",
-                self.discord_client.channel.name,
+                self.client.channel.name,
                 self.embed_title,
             )
             await self.new_message(embed=embed)
@@ -116,7 +120,7 @@ class DiscordEmbedUpdater(abc.ABC):
     def __repr__(self) -> str:
         return (
             f"{self.__class__.__qualname__}"
-            f"(channel_name={self.discord_client.channel.name!r}, "
+            f"(channel_name={self.client.channel.name!r}, "
             f"embed_title={self.embed_title!r})"
         )
 

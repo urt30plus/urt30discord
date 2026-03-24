@@ -7,7 +7,7 @@ from pathlib import Path
 import aiofiles
 import aiofiles.os
 import discord
-from urt30arcon import AsyncRconClient, GameType
+from urt30arcon import GameType
 
 from .core import DiscordClient, DiscordEmbedUpdater
 
@@ -19,12 +19,11 @@ MapCycle = dict[str, dict[str, str]]
 class MapCycleUpdater(DiscordEmbedUpdater):
     def __init__(
         self,
-        discord_client: DiscordClient,
-        rcon_client: AsyncRconClient,
+        client: DiscordClient,
         embed_title: str,
         mapcycle_file: Path,
     ) -> None:
-        super().__init__(discord_client, rcon_client, embed_title)
+        super().__init__(client, embed_title)
         self.mapcycle_file = mapcycle_file
         self.last_mtime = 0.0
 
