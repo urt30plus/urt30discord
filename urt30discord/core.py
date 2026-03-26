@@ -5,7 +5,7 @@ import logging
 import discord
 from urt30arcon import AsyncRconClient
 
-from . import settings
+from . import __version__, settings
 
 logger = logging.getLogger(__name__)
 
@@ -144,3 +144,17 @@ async def bot_stop(interaction: discord.Interaction) -> None:
     )
     await asyncio.sleep(3.0)
     raise SystemExit(3)
+
+
+@discord_client.tree.command(name="bot-info", guild=GUILD)
+async def bot_info(interaction: discord.Interaction) -> None:
+    """Information about the bot.
+
+    Args:
+        interaction: discord.Interaction
+    """
+    await interaction.response.send_message(
+        f"v{__version__}",
+        ephemeral=True,
+        delete_after=CMD_RESP_EXPIRY,
+    )
