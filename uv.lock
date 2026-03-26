@@ -607,11 +607,11 @@ wheels = [
 
 [[package]]
 name = "urt30arcon"
-version = "2.0.0"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b2/6f/05b7705c986804d1d4d3cf3cee9c59acf85435f6bbb58b3acce86a5337b0/urt30arcon-2.0.0.tar.gz", hash = "sha256:465bb52ce5ce223384d6a8641e9ddb921dd22a548d12d5d1f8779808bfd2a290", size = 12346, upload-time = "2026-03-24T23:11:24.997Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/f1/6e1266189e8e80134a33e6df38f1bac8bf13083caed1d207b38be40e1ec2/urt30arcon-2.0.1.tar.gz", hash = "sha256:112fe9987b364c44021e847be13dd538dc978c55a592594667ffb956889a5607", size = 12326, upload-time = "2026-03-26T00:16:48.468Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a7/14/5f45bde420f3f395ea2781569f4a25c815699e5dc5c4b0ce26decfeb0580/urt30arcon-2.0.0-py3-none-any.whl", hash = "sha256:6e1a482659147afdf8e412f091361d8c1f47cfcaeb07db3899f82e8340db067f", size = 12841, upload-time = "2026-03-24T23:11:25.677Z" },
+    { url = "https://files.pythonhosted.org/packages/cf/22/443aea5c13e4a9c5b7e483143efab656722b625c01128c74977bc941837d/urt30arcon-2.0.1-py3-none-any.whl", hash = "sha256:7b40653c670302d9cef6270c5bc66ab5652601f8bb4198ff1d9fd6b8dde5dfa3", size = 12813, upload-time = "2026-03-26T00:16:47.615Z" },
 ]
 
 [[package]]
@@ -640,17 +640,17 @@ dev = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.1.0" },
     { name = "brotli", specifier = ">=1.2.0" },
-    { name = "discord-py", extras = ["speed"], specifier = ">=2.7.0" },
+    { name = "discord-py", extras = ["speed"], specifier = ">=2.7.1" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2025.3" },
-    { name = "urt30arcon", specifier = ">=2.0.0" },
+    { name = "urt30arcon", specifier = ">=2.0.1" },
     { name = "uvloop", marker = "sys_platform == 'linux'", specifier = ">=0.22.1" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=9.0.2" },
-    { name = "ty", specifier = ">=0.0.24" },
+    { name = "ty", specifier = ">=0.0.25" },
     { name = "types-aiofiles", specifier = ">=25.1.0" },
     { name = "watchfiles", specifier = ">=1.1.1" },
 ]
