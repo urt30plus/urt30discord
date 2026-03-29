@@ -29,7 +29,8 @@ class BotSettings(BaseModel, frozen=True):
 
 
 class RconSettings(BaseModel, frozen=True):
-    host: str = "127.0.0.1"
+    public_ip_or_dns: str
+    private_ip: str = "127.0.0.1"
     port: Annotated[int, Field(ge=0, le=65535)] = 27960
     password: Annotated[str, Field(repr=False)]
     recv_timeout: float = 0.25
@@ -39,7 +40,6 @@ class RconSettings(BaseModel, frozen=True):
 class GameInfoSettings(BaseModel, frozen=True):
     enabled: bool = True
     log_level: str = "INFO"
-    game_host: str = ""
     embed_title: str = "Current Map"
     delay: float = 5.0
     delay_no_updates: float = 60.0

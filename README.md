@@ -34,7 +34,10 @@ log_level_discord = "ERROR"
 
 [rcon]
 log_level = "INFO"
-host = "127.0.0.1"
+# Game server public DNS or IP address
+public_ip_or_dns = "game.urt-30plus.org"  # required
+# Local game server IP for the rcon connection
+private_ip = "127.0.0.1"
 port = 27960
 password = "supersekret"  # required
 recv_timeout = 0.25
@@ -42,7 +45,6 @@ recv_timeout = 0.25
 [gameinfo]
 enabled = true
 log_level = "INFO"
-game_host = "game.urt-30plus.org"  # required
 embed_title = "Current Map"
 delay = 5.0
 delay_no_updates = 60.0

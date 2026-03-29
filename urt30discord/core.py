@@ -29,7 +29,7 @@ class DiscordClient(discord.Client):
         self.channel_id = channel_id
         self._channel: discord.TextChannel | None = None
         self.rcon = AsyncRconClient(
-            host=settings.rcon.host,
+            host=settings.rcon.private_ip,
             port=settings.rcon.port,
             password=settings.rcon.password,
             recv_timeout=settings.rcon.recv_timeout,

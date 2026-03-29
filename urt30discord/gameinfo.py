@@ -38,12 +38,13 @@ class GameInfoUpdater(DiscordEmbedUpdater):
         self,
         client: DiscordClient,
         embed_title: str,
-        game_host: str | None = None,
+        public_ip_or_dns: str,
+        public_port: int,
     ) -> None:
         super().__init__(client, embed_title)
         self._last_game: Game | None = None
         self._next_map = NextMapCache(None, -1.0)
-        self._game_host = game_host
+        self._connect_info = f"```/connect {public_ip_or_dns}:{public_port}```"
 
     async def update(self) -> bool:
         message, game = await asyncio.gather(
@@ -56,7 +57,7 @@ class GameInfoUpdater(DiscordEmbedUpdater):
         else:
             next_map = await self.fetch_next_map(game)
             embed = create_server_embed(
-                game, next_map, self.embed_title, self._game_host, self.client.rcon.port
+                game, next_map, self.embed_title, self._connect_info
             )
             result = await self._update_or_create_if_needed(message, embed)
 
@@ -176,19 +177,11 @@ def create_server_embed(
     game: Game | None,
     next_map: str | None,
     title: str,
-    game_host: str | None = None,
-    game_port: int | None = None,
+    connect_info: str,
 ) -> discord.Embed:
     embed = discord.Embed(title=title)
 
     last_updated = f"updated <t:{int(time.time())}:R>"
-
-    if game_host:
-        if not game_port:
-            game_port = 27960
-        connect_info = f"```/connect {game_host}:{game_port}```"
-    else:
-        connect_info = ""
 
     if game:
         embed.description = f"```\n{game.map_name}\n```"

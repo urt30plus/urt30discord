@@ -48,7 +48,8 @@ async def run() -> None:
                 updater = GameInfoUpdater(
                     client=discord_client,
                     embed_title=settings.gameinfo.embed_title,
-                    game_host=settings.gameinfo.game_host,
+                    public_ip_or_dns=settings.rcon.public_ip_or_dns,
+                    public_port=settings.rcon.port,
                 )
                 if settings.mapcycle.enabled:
                     # delay on first start to allow mapcycle time to complete first
