@@ -54,7 +54,8 @@ timeout = 5.0
 enabled = true
 log_level = "INFO"
 embed_title = "Map Cycle"
-delay = 3600.0
+delay = 300.0
+delay_no_updates = 3600.0
 timeout = 30.0
 file = '/full/path/to/mapcycle.txt'  # required
 ```

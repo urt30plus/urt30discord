@@ -37,20 +37,23 @@ class RconSettings(BaseModel, frozen=True):
     log_level: str = "INFO"
 
 
-class GameInfoSettings(BaseModel, frozen=True):
+class BaseUpdaterSettings(BaseModel, frozen=True):
     enabled: bool = True
     log_level: str = "INFO"
-    embed_title: str = "Current Map"
+    embed_title: str = "Embed Title"
     delay: float = 5.0
     delay_no_updates: float = 60.0
     timeout: float = 5.0
 
 
-class MapCycleSettings(BaseModel, frozen=True):
-    enabled: bool = True
-    log_level: str = "INFO"
+class GameInfoSettings(BaseUpdaterSettings, frozen=True):
+    embed_title: str = "Current Map"
+
+
+class MapCycleSettings(BaseUpdaterSettings, frozen=True):
     embed_title: str = "Map Cycle"
-    delay: float = 3600.0
+    delay: float = 300.0
+    delay_no_updates: float = 3600.0
     timeout: float = 30.0
     file: str
 

@@ -37,7 +37,7 @@ async def run() -> None:
                         run_updater_task(
                             updater,
                             delay=settings.mapcycle.delay,
-                            delay_no_updates=settings.mapcycle.delay,
+                            delay_no_updates=settings.mapcycle.delay_no_updates,
                             timeout=settings.mapcycle.timeout,
                         )
                     )
