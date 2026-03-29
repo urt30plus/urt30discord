@@ -10,14 +10,14 @@ dependencies = [
     "discord.py[speed]>=2.7.1",
     "pydantic>=2.12.5",
     "tzdata>=2025.3; sys_platform == 'win32'",
-    "urt30arcon>=2.0.1",
+    "urt30arcon>=2.0.2",
     "uvloop>=0.22.1; sys_platform == 'linux'",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
-    "ty>=0.0.25",
+    "ty>=0.0.26",
     "types-aiofiles>=25.1.0",
     "watchfiles>=1.1.1",
 ]
