@@ -58,6 +58,10 @@ delay = 300.0
 delay_no_updates = 3600.0
 timeout = 30.0
 file = '/full/path/to/mapcycle.txt'  # required
+
+[mapfiles]
+path = '/home/user/UrbanTerror43/q3ut4'
+downloads_url = 'http://maps.example.com/maps/q3ut4'
 ```
 
 ## Running

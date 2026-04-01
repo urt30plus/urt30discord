@@ -8,7 +8,7 @@ import discord
 import psutil
 from urt30arcon import AsyncRconClient
 
-from . import __version__, settings
+from . import __version__, mapfiles, settings
 
 logger = logging.getLogger(__name__)
 
@@ -147,6 +147,21 @@ async def bot_stop(interaction: discord.Interaction) -> None:
     )
     await asyncio.sleep(3.0)
     raise SystemExit(3)
+
+
+@discord_client.tree.command(name="add-map-file", guild=GUILD)
+async def add_map_file(interaction: discord.Interaction, name: str) -> None:
+    """Adds a map file to the server.
+
+    Args:
+        interaction: discord.Interaction
+        name: name of the map file or a URL
+    """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    result = await mapfiles.add_map_file(name)
+    await interaction.followup.send(result)
+    await asyncio.sleep(CMD_RESP_EXPIRY)
+    await interaction.delete_original_response()
 
 
 @discord_client.tree.command(name="bot-info", guild=GUILD)

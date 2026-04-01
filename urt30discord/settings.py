@@ -10,7 +10,7 @@ import tomllib
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, DirectoryPath, Field, HttpUrl
 
 type DiscordUser = Annotated[str, Field(pattern=r"^.*#\d+$")]
 type Snowflake = Annotated[int, Field(gt=0)]
@@ -59,6 +59,11 @@ class MapCycleSettings(BaseUpdaterSettings, frozen=True):
     file: str
 
 
+class MapFilesSettings(BaseModel, frozen=True):
+    path: DirectoryPath
+    downloads_url: HttpUrl
+
+
 if "URT30DISCORD_CONFIG_FILE" in os.environ:
     _config_file = Path(os.environ["URT30DISCORD_CONFIG_FILE"])
 elif len(sys.argv) > 1:
@@ -74,6 +79,7 @@ bot = BotSettings(**_config["bot"])
 rcon = RconSettings(**_config["rcon"])
 gameinfo = GameInfoSettings(**_config["gameinfo"])
 mapcycle = MapCycleSettings(**_config["mapcycle"])
+mapfiles = MapFilesSettings(**_config["mapfiles"])
 
 logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s:%(funcName)s %(message)s"
