@@ -1,8 +1,11 @@
 import abc
 import asyncio
+import datetime
+import functools
 import logging
 
 import discord
+import psutil
 from urt30arcon import AsyncRconClient
 
 from . import __version__, settings
@@ -153,8 +156,66 @@ async def bot_info(interaction: discord.Interaction) -> None:
     Args:
         interaction: discord.Interaction
     """
-    await interaction.response.send_message(
-        f"v{__version__}",
-        ephemeral=True,
-        delete_after=CMD_RESP_EXPIRY,
+    embed = discord.Embed(title="Bot Information")
+    embed.colour = discord.Colour.green()
+    embed.add_field(name="bot version", value=__version__, inline=False)
+    embed.add_field(name="discord-py version", value=discord.__version__, inline=False)
+    embed.add_field(name="bot user", value=discord_client.bot_user, inline=False)
+    embed.add_field(
+        name="updaters channel", value=discord_client.channel.name, inline=False
     )
+    embed.add_field(name="rcon client", value=f"{discord_client.rcon!r}", inline=False)
+    embed.add_field(
+        name="asyncio.loop", value=f"{asyncio.get_running_loop()!r}", inline=False
+    )
+    embed.add_field(
+        name="gameinfo updater enabled", value=settings.gameinfo.enabled, inline=False
+    )
+    embed.add_field(
+        name="mapcycle updater enabled", value=settings.mapcycle.enabled, inline=False
+    )
+    embed.add_field(name="bot boot time", value=settings.STARTED_AT, inline=False)
+    embed.add_field(name="system boot time", value=_sys_boot_time(), inline=False)
+    async with asyncio.timeout(1.0):
+        try:
+            net_stats_udp = await _net_stats_udp()
+        except TimeoutError:
+            net_stats_udp = "timed out"
+        except Exception as exc:
+            net_stats_udp = f"failed: {exc!r}"
+    embed.add_field(name="udp network stats", value=net_stats_udp, inline=False)
+    embed.add_field(name="cpu stats", value=psutil.cpu_percent(), inline=False)
+    embed.add_field(name="memory stats", value=psutil.virtual_memory(), inline=False)
+    await interaction.response.send_message(
+        embed=embed,
+        ephemeral=True,
+        delete_after=120.0,
+    )
+
+
+async def _net_stats_udp() -> str:
+    proc = await asyncio.create_subprocess_exec(
+        "/usr/bin/netstat",
+        "-suna",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await proc.communicate()
+    if stderr:
+        logger.error(stderr)
+    data = stdout.decode().splitlines()
+    text = None
+    for line in data:
+        if (line := line.strip()) == "Udp:":
+            text = []
+        elif line == "UdpLite:":
+            break
+        elif text is not None:
+            text.append(line)
+    return "\n".join(text or [])
+
+
+@functools.cache
+def _sys_boot_time() -> datetime.datetime:
+    boot_time = psutil.boot_time()
+    return datetime.datetime.fromtimestamp(boot_time, tz=datetime.UTC)

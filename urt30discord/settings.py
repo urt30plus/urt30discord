@@ -2,6 +2,7 @@
 Bot settings and configuration.
 """
 
+import datetime
 import logging
 import os
 import sys
@@ -87,3 +88,5 @@ logging.getLogger("urt30arcon").setLevel(rcon.log_level)
 logging.getLogger("urt30discord").setLevel(bot.log_level)
 logging.getLogger("urt30discord.gameinfo").setLevel(gameinfo.log_level)
 logging.getLogger("urt30discord.mapcycle").setLevel(mapcycle.log_level)
+
+STARTED_AT = datetime.datetime.now(tz=datetime.UTC)
