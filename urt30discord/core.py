@@ -212,7 +212,7 @@ async def _net_stats_udp() -> str:
             break
         elif text is not None:
             text.append(line)
-    return "\n".join(text or [])
+    return "```" + "\n".join(text or []) + "```"
 
 
 @functools.cache
