@@ -62,6 +62,7 @@ class MapCycleSettings(BaseUpdaterSettings, frozen=True):
 class MapFilesSettings(BaseModel, frozen=True):
     path: DirectoryPath
     downloads_url: HttpUrl
+    sftp_url: str | None = None
 
 
 if "URT30DISCORD_CONFIG_FILE" in os.environ:

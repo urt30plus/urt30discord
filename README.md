@@ -62,6 +62,7 @@ file = '/full/path/to/mapcycle.txt'  # required
 [mapfiles]
 path = '/home/user/UrbanTerror43/q3ut4'
 downloads_url = 'http://maps.example.com/maps/q3ut4'
+sftp_url = 'sftp://myuser@my.files.com:22/public/maps/q3ut4'
 ```
 
 ## Running

@@ -155,12 +155,12 @@ async def add_map_file(interaction: discord.Interaction, name: str) -> None:
 
     Args:
         interaction: discord.Interaction
-        name: name of the map file or a URL
+        name: name of the map file (ex. ut4_casa_n1)
     """
     await interaction.response.defer(ephemeral=True, thinking=True)
     result = await mapfiles.add_map_file(name)
     await interaction.followup.send(result)
-    await asyncio.sleep(CMD_RESP_EXPIRY)
+    await asyncio.sleep(60.0)
     await interaction.delete_original_response()
 
 
