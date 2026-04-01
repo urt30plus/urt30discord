@@ -75,10 +75,6 @@ rcon = RconSettings(**_config["rcon"])
 gameinfo = GameInfoSettings(**_config["gameinfo"])
 mapcycle = MapCycleSettings(**_config["mapcycle"])
 
-if not (gameinfo.enabled or mapcycle.enabled):
-    # TODO: better message
-    raise RuntimeError("no_updaters_enabled")
-
 logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s:%(funcName)s %(message)s"
 )
