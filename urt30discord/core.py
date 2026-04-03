@@ -179,6 +179,21 @@ async def map_list(interaction: discord.Interaction) -> None:
     await interaction.delete_original_response()
 
 
+@discord_client.tree.command(name="map-cycle-next", guild=GUILD)
+async def map_cycle_next(interaction: discord.Interaction) -> None:
+    """Cycle to the next map.
+
+    Args:
+        interaction: discord.Interaction
+    """
+    await discord_client.rcon.cycle_map()
+    await interaction.response.send_message(
+        "cycling to next map",
+        ephemeral=True,
+        delete_after=CMD_RESP_EXPIRY,
+    )
+
+
 @discord_client.tree.command(name="bot-info", guild=GUILD)
 async def bot_info(interaction: discord.Interaction) -> None:
     """Information about the bot.
