@@ -194,6 +194,22 @@ async def map_cycle_next(interaction: discord.Interaction) -> None:
     )
 
 
+@discord_client.tree.command(name="map-set-next", guild=GUILD)
+async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
+    """Set the next map.
+
+    Args:
+        interaction: discord.Interaction
+        map_name: name of map to cycle to next
+    """
+    await discord_client.rcon.setcvar("g_nextmap", map_name)
+    await interaction.response.send_message(
+        f"next map set to `{map_name}`",
+        ephemeral=True,
+        delete_after=CMD_RESP_EXPIRY,
+    )
+
+
 @discord_client.tree.command(name="bot-info", guild=GUILD)
 async def bot_info(interaction: discord.Interaction) -> None:
     """Information about the bot.
