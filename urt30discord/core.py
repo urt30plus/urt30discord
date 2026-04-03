@@ -149,8 +149,8 @@ async def bot_stop(interaction: discord.Interaction) -> None:
     raise SystemExit(3)
 
 
-@discord_client.tree.command(name="add-map-file", guild=GUILD)
-async def add_map_file(interaction: discord.Interaction, name: str) -> None:
+@discord_client.tree.command(name="map-add", guild=GUILD)
+async def map_add(interaction: discord.Interaction, name: str) -> None:
     """Adds a map file to the server.
 
     Args:
