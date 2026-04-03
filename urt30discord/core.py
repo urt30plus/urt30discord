@@ -164,6 +164,21 @@ async def add_map_file(interaction: discord.Interaction, name: str) -> None:
     await interaction.delete_original_response()
 
 
+@discord_client.tree.command(name="map-list", guild=GUILD)
+async def map_list(interaction: discord.Interaction) -> None:
+    """Lists maps available on the server.
+
+    Args:
+        interaction: discord.Interaction
+    """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    all_maps = await discord_client.rcon.maps()
+    result = "* " + "\n* ".join(all_maps)
+    await interaction.followup.send(result)
+    await asyncio.sleep(60.0)
+    await interaction.delete_original_response()
+
+
 @discord_client.tree.command(name="bot-info", guild=GUILD)
 async def bot_info(interaction: discord.Interaction) -> None:
     """Information about the bot.
