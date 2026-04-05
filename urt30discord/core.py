@@ -3,8 +3,10 @@ import asyncio
 import datetime
 import functools
 import logging
+from typing import Literal
 
 import discord
+import discord.app_commands
 import psutil
 from urt30arcon import AsyncRconClient
 
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 GUILD = discord.Object(id=settings.bot.server_id)
 CMD_RESP_EXPIRY = 10.0
+CMD_RESP_EXPIRY_DEFER = 60.0
 
 
 class DiscordClientError(Exception):
@@ -160,7 +163,7 @@ async def map_add(interaction: discord.Interaction, name: str) -> None:
     await interaction.response.defer(ephemeral=True, thinking=True)
     result = await mapfiles.add_map_file(name)
     await interaction.followup.send(result)
-    await asyncio.sleep(60.0)
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
 
 
@@ -175,7 +178,7 @@ async def map_list(interaction: discord.Interaction) -> None:
     all_maps = await discord_client.rcon.maps()
     result = "* " + "\n* ".join(all_maps)
     await interaction.followup.send(result)
-    await asyncio.sleep(60.0)
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
 
 
@@ -208,6 +211,43 @@ async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
         ephemeral=True,
         delete_after=CMD_RESP_EXPIRY,
     )
+
+
+@discord_client.tree.command(name="map-cycle-add", guild=GUILD)
+async def map_cycle_add(
+    interaction: discord.Interaction,
+    map_name: str,
+    pos: Literal["before", "after"],
+    other_map: str | None = None,
+) -> None:
+    """Adds the map to the mapcycle.
+
+    Args:
+        interaction: discord.Interaction
+        map_name: name of map to add to the map cycle
+        pos: position to add the new map
+        other_map: position relative to this map for insertion
+    """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    result = f"not implemented yet: {map_name} - {pos} - {other_map}"
+    await interaction.followup.send(result)
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
+    await interaction.delete_original_response()
+
+
+@discord_client.tree.command(name="map-cycle-remove", guild=GUILD)
+async def map_cycle_remove(interaction: discord.Interaction, map_name: str) -> None:
+    """Removes the map to the mapcycle.
+
+    Args:
+        interaction: discord.Interaction
+        map_name: name of map to remove from the map cycle
+    """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    result = f"not implemented yet: {map_name}"
+    await interaction.followup.send(result)
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
+    await interaction.delete_original_response()
 
 
 @discord_client.tree.command(name="bot-info", guild=GUILD)
