@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import sys
-from pathlib import Path
 
 from . import __version__, settings
 from .core import DiscordEmbedUpdater, discord_client
@@ -18,9 +17,7 @@ async def run() -> None:
             tg.create_task(discord_client.start(settings.bot.token))
 
             if settings.mapcycle.enabled:
-                if mapcycle_file := settings.mapcycle.file:
-                    mapcycle_file = Path(mapcycle_file)
-                else:
+                if not (mapcycle_file := settings.mapcycle.file):
                     mapcycle_file = await discord_client.rcon.mapcycle_file()
                 if not mapcycle_file or not mapcycle_file.exists():
                     logger.warning(

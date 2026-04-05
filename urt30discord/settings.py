@@ -10,7 +10,7 @@ import tomllib
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import BaseModel, DirectoryPath, Field, HttpUrl
+from pydantic import BaseModel, DirectoryPath, Field, FilePath, HttpUrl
 
 type DiscordUser = Annotated[str, Field(pattern=r"^.*#\d+$")]
 type Snowflake = Annotated[int, Field(gt=0)]
@@ -56,7 +56,7 @@ class MapCycleSettings(BaseUpdaterSettings, frozen=True):
     delay: float = 300.0
     delay_no_updates: float = 3600.0
     timeout: float = 30.0
-    file: str
+    file: FilePath
 
 
 class MapFilesSettings(BaseModel, frozen=True):
