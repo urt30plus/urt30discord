@@ -103,3 +103,27 @@ async def map_cycle_add(
 
 async def map_cycle_remove(map_name: str) -> str:
     return f"not implemented yet: {map_name}"
+
+
+def map_cycle_txt_add(
+    txt: str, map_name: str, pos: Literal["before", "after"], other_map: str | None
+) -> str:
+    result = []
+    if other_map is None and pos == "before":
+        result.append(map_name)
+    for line in txt.splitlines():
+        result.append(line)
+        if other_map and line.strip() == other_map:
+            result.append(map_name)
+    if other_map is None and pos == "after":
+        result.append(map_name)
+    return "\n".join(result)
+
+
+def map_cycle_txt_remove(txt: str, map_name: str) -> str:
+    result = []
+    for line in txt.splitlines():
+        if line.strip() == map_name:
+            continue
+        result.append(line)
+    return "\n".join(result)

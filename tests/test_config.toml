@@ -1,0 +1,40 @@
+[bot]
+user = "mybot#1234"  # required
+token = "xxxx"  # required
+server_id = 123456789  # required
+channel_id = 987654321  # required
+log_level = "INFO"
+log_level_root = "WARNING"
+log_level_discord = "ERROR"
+
+[rcon]
+log_level = "INFO"
+# Game server public DNS or IP address
+public_ip_or_dns = "game.urt-30plus.org"  # required
+# Local game server IP for the rcon connection
+private_ip = "127.0.0.1"
+port = 27960
+password = "supersekret"  # required
+recv_timeout = 0.25
+
+[gameinfo]
+enabled = true
+log_level = "INFO"
+embed_title = "Current Map"
+delay = 5.0
+delay_no_updates = 60.0
+timeout = 5.0
+
+[mapcycle]
+enabled = true
+log_level = "INFO"
+embed_title = "Map Cycle"
+delay = 300.0
+delay_no_updates = 3600.0
+timeout = 30.0
+file = './tests/q3ut4/mapcycle.txt'  # required
+
+[mapfiles]
+path = './tests/q3ut4'
+downloads_url = 'http://maps.example.com/maps/q3ut4'
+sftp_url = 'sftp://myuser@my.files.com:22/public/maps/q3ut4'

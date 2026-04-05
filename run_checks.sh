@@ -13,4 +13,6 @@ fi
 ty --version
 ty check
 
+export URT30DISCORD_CONFIG_FILE=./tests/test_config.toml
+
 pytest
