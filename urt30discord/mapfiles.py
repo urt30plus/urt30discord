@@ -95,7 +95,9 @@ async def upload_map_file(map_file: Path) -> str:
     )
 
 
-async def map_cycle_add(map_name: str, pos: Literal["before", "after"], other_map: str | None) -> str:
+async def map_cycle_add(
+    map_name: str, pos: Literal["before", "after"], other_map: str | None
+) -> str:
     return f"not implemented yet: {map_name} - {pos} - {other_map}"
 
 
