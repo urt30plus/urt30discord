@@ -701,11 +701,11 @@ wheels = [
 
 [[package]]
 name = "urt30arcon"
-version = "2.1.1"
+version = "2.1.2"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/5a/2e/f975ba3fb037c15cc93510fe1bd5baaa920dda2c772ff08f16e90ce68b07/urt30arcon-2.1.1.tar.gz", hash = "sha256:61b7ab82dd3491eebe955d8af4d6378dc181467b1b5efbb87df6cdf6cf40acff", size = 12449, upload-time = "2026-04-03T13:40:40.709Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ba/e8/65907cd9c9ecc70247ee5e856ac781276e022825bc0bf3328005a2627f27/urt30arcon-2.1.2.tar.gz", hash = "sha256:208a80be89b4a1b344648fd54fd535403a7c96a3a0bd59c3d3fca219e7027be4", size = 12522, upload-time = "2026-04-05T14:01:08.976Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c1/d1/0f51f83ddb236731a4128b4a1ef5b983e55198856df41f9e4e326733b61c/urt30arcon-2.1.1-py3-none-any.whl", hash = "sha256:b4ab6101f1df28f8c144d68957cc75928b9990bd3eb77eb4b071a381980cc5a8", size = 12957, upload-time = "2026-04-03T13:40:39.858Z" },
+    { url = "https://files.pythonhosted.org/packages/1b/99/b50eee0c9c3d37b3a1e3b7badf0d1b7c356770f75e2392bd7ee88fec6047/urt30arcon-2.1.2-py3-none-any.whl", hash = "sha256:4599d8b6dc915517c2075ae0a53e25f01e3154ba5c1891b4b9a23954d5c3de55", size = 13021, upload-time = "2026-04-05T14:01:09.707Z" },
 ]
 
 [[package]]
@@ -743,7 +743,7 @@ requires-dist = [
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2026.1" },
-    { name = "urt30arcon", specifier = ">=2.1.1" },
+    { name = "urt30arcon", specifier = ">=2.1.2" },
     { name = "uvloop", marker = "sys_platform == 'linux'", specifier = ">=0.22.1" },
 ]
 
