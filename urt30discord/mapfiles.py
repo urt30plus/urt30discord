@@ -2,6 +2,7 @@ import contextlib
 import logging
 import urllib.parse
 from pathlib import Path
+from typing import Literal
 
 import aiofiles
 import aiofiles.os
@@ -92,3 +93,11 @@ async def upload_map_file(map_file: Path) -> str:
         f"uploaded map file to [{parts.username}@{parts.hostname}"
         f":{parts.port or 22}{parts.path}]"
     )
+
+
+async def map_cycle_add(map_name: str, pos: Literal["before", "after"], other_map: str | None) -> str:
+    return f"not implemented yet: {map_name} - {pos} - {other_map}"
+
+
+async def map_cycle_remove(map_name: str) -> str:
+    return f"not implemented yet: {map_name}"

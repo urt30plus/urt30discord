@@ -229,7 +229,7 @@ async def map_cycle_add(
         other_map: position relative to this map for insertion
     """
     await interaction.response.defer(ephemeral=True, thinking=True)
-    result = f"not implemented yet: {map_name} - {pos} - {other_map}"
+    result = await mapfiles.map_cycle_add(map_name, pos, other_map)
     await interaction.followup.send(result)
     await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
@@ -244,7 +244,7 @@ async def map_cycle_remove(interaction: discord.Interaction, map_name: str) -> N
         map_name: name of map to remove from the map cycle
     """
     await interaction.response.defer(ephemeral=True, thinking=True)
-    result = f"not implemented yet: {map_name}"
+    result = await mapfiles.map_cycle_remove(map_name)
     await interaction.followup.send(result)
     await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
