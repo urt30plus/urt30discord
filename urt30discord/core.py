@@ -209,14 +209,21 @@ async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
         interaction: discord.Interaction
         map_name: name of map to cycle to next
     """
-    await discord_client.rcon.setcvar("g_nextmap", map_name)
-    await interaction.response.send_message(
-        f"next map set to `{map_name}`",
-        ephemeral=True,
-        delete_after=CMD_RESP_EXPIRY,
-    )
-    if updater := discord_client.embed_updaters.get("GameInfoUpdater"):
-        await updater.update()
+    if await _map_exists_on_server(map_name):
+        await discord_client.rcon.setcvar("g_nextmap", map_name)
+        await interaction.response.send_message(
+            f"next map set to `{map_name}`",
+            ephemeral=True,
+            delete_after=CMD_RESP_EXPIRY,
+        )
+        if updater := discord_client.embed_updaters.get("GameInfoUpdater"):
+            await updater.update()
+    else:
+        await interaction.response.send_message(
+            f"map `{map_name}` is not available on the server",
+            ephemeral=True,
+            delete_after=CMD_RESP_EXPIRY,
+        )
 
 
 @discord_client.tree.command(name="map-cycle-add", guild=GUILD)
@@ -235,6 +242,15 @@ async def map_cycle_add(
         other_map: position relative to this map for insertion
     """
     await interaction.response.defer(ephemeral=True, thinking=True)
+
+    if not await _map_exists_on_server(map_name):
+        await interaction.followup.send(
+            f"map `{map_name}` is not available on the server"
+        )
+        await asyncio.sleep(CMD_RESP_EXPIRY)
+        await interaction.delete_original_response()
+        return
+
     result = await mapfiles.map_cycle_add(map_name, pos, other_map)
     await interaction.followup.send(result)
     if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
@@ -330,3 +346,9 @@ async def _net_stats_udp() -> str:
 def _sys_boot_time() -> datetime.datetime:
     boot_time = psutil.boot_time()
     return datetime.datetime.fromtimestamp(boot_time, tz=datetime.UTC)
+
+
+async def _map_exists_on_server(map_name: str) -> bool:
+    all_maps = await discord_client.rcon.maps()
+    needle = map_name.strip().lower()
+    return any(m.lower() == needle for m in all_maps)

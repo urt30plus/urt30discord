@@ -106,14 +106,17 @@ async def map_cycle_add(
     map_name: str, pos: Literal["before", "after"], other_map: str | None
 ) -> str:
     entries = await load_map_cycle_file(settings.mapcycle.file)
-    if [x for x in entries if x.map_name == map_name]:
+
+    map_to_add = map_name.strip().lower()
+    if [x for x in entries if x.map_name.lower() == map_to_add]:
         return f"map file [{map_name}] already exists in the map cycle"
 
-    new_entry = MapCycleEntry(map_name=map_name)
+    new_entry = MapCycleEntry(map_name=map_to_add)
     new_entries = []
     if other_map:
+        needle = other_map.strip().lower()
         for entry in entries:
-            if entry.map_name == other_map:
+            if entry.map_name.lower() == needle:
                 if pos == "before":
                     new_entries.append(new_entry)
                     new_entries.append(entry)
@@ -135,7 +138,8 @@ async def map_cycle_add(
 
 async def map_cycle_remove(map_name: str) -> str:
     entries = await load_map_cycle_file(settings.mapcycle.file)
-    new_entries = [e for e in entries if e.map_name != map_name]
+    map_to_remove = map_name.strip().lower()
+    new_entries = [e for e in entries if e.map_name.lower() != map_to_remove]
     if len(new_entries) == len(entries):
         return f"map file [{map_name}] not found in map cycle"
     await save_map_cycle_file(settings.mapcycle.file, new_entries)
