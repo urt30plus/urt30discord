@@ -197,6 +197,8 @@ async def map_cycle_next(interaction: discord.Interaction) -> None:
         ephemeral=True,
         delete_after=CMD_RESP_EXPIRY,
     )
+    if updater := discord_client.embed_updaters.get("GameInfoUpdater"):
+        await updater.update()
 
 
 @discord_client.tree.command(name="map-set-next", guild=GUILD)
@@ -213,6 +215,8 @@ async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
         ephemeral=True,
         delete_after=CMD_RESP_EXPIRY,
     )
+    if updater := discord_client.embed_updaters.get("GameInfoUpdater"):
+        await updater.update()
 
 
 @discord_client.tree.command(name="map-cycle-add", guild=GUILD)
