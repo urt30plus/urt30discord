@@ -126,4 +126,4 @@ Recommend installing as a tool:
 To run the bot and have it reload when changes are made, use the following
 command:
 
-    watchfiles urt30discord.__main__.main
+    watchfiles "uv run -m urt30discord ./temp/test-config.toml" urt30discord
