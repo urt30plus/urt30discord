@@ -2,12 +2,14 @@ import asyncio
 import logging
 import operator
 import time
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import discord
-from urt30arcon import Game, Player
 
 from .core import DiscordClient, DiscordEmbedUpdater
+
+if TYPE_CHECKING:
+    from urt30arcon import Game, Player
 
 logger = logging.getLogger(__name__)
 

@@ -2,8 +2,7 @@ import contextlib
 import dataclasses
 import logging
 import urllib.parse
-from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import aiofiles
 import aiofiles.os
@@ -11,6 +10,9 @@ import aiohttp
 import asyncssh
 
 from . import settings
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

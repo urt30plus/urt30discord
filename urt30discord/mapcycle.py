@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import logging
 import time
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import aiofiles
 import aiofiles.os
@@ -10,6 +10,9 @@ import discord
 from urt30arcon import GameType
 
 from .core import DiscordClient, DiscordEmbedUpdater
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 

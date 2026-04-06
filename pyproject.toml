@@ -62,7 +62,6 @@ select = [
     "UP",  # pyupgrade
     "W",  # pycodestyle (warnings)
 ]
-ignore = ["ASYNC109", "ISC001", "TC002", "TC003"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*" = ["PLR2004", "S101"]

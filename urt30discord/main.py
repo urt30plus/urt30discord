@@ -35,7 +35,7 @@ async def run() -> None:
                             updater,
                             delay=settings.mapcycle.delay,
                             delay_no_updates=settings.mapcycle.delay_no_updates,
-                            timeout=settings.mapcycle.timeout,
+                            timeout_for_update=settings.mapcycle.timeout,
                         )
                     )
             else:
@@ -56,7 +56,7 @@ async def run() -> None:
                         updater,
                         delay=settings.gameinfo.delay,
                         delay_no_updates=settings.gameinfo.delay_no_updates,
-                        timeout=settings.gameinfo.timeout,
+                        timeout_for_update=settings.gameinfo.timeout,
                     )
                 )
             else:
@@ -67,7 +67,10 @@ async def run() -> None:
 
 
 async def run_updater_task(
-    updater: DiscordEmbedUpdater, delay: float, delay_no_updates: float, timeout: float
+    updater: DiscordEmbedUpdater,
+    delay: float,
+    delay_no_updates: float,
+    timeout_for_update: float,
 ) -> None:
     await discord_client.wait_until_ready()
     logger.info(
@@ -75,11 +78,15 @@ async def run_updater_task(
         updater,
         delay,
         delay_no_updates,
-        timeout,
+        timeout_for_update,
     )
     while True:
         try:
-            was_updated = await updater.update()
+            async with asyncio.timeout(timeout_for_update):
+                was_updated = await updater.update()
+        except TimeoutError:
+            logger.warning("updater timed out")
+            was_updated = True  # use the shorter delay to retry
         except Exception:
             logger.exception("%r updater failed", updater)
             was_updated = True  # use the shorter delay to retry
