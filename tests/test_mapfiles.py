@@ -3,36 +3,44 @@ from textwrap import dedent
 from urt30discord import mapfiles
 
 
-def test_map_cycle_txt_add_map() -> None:
+def test_parse_map_cycle_simple() -> None:
     s = """\
     ut4_abbey
     ut4_casa
     ut4_paris
     """
-    expect = """\
-    ut4_abbey
-    ut4_casa
-    ut4_tohunga_b8
-    ut4_paris
-    """
-    actual = mapfiles.map_cycle_txt_add(
-        dedent(s), "ut4_tohunga_b8", "after", "ut4_casa"
-    )
-    assert actual.strip() == dedent(expect).strip()
+    result = mapfiles.parse_map_entries(dedent(s))
+    assert len(result) == 3
+    assert result[0].map_name == "ut4_abbey"
+    assert result[0].map_options is None
+    assert result[2].map_name == "ut4_paris"
+    assert result[2].map_options is None
 
 
-def test_map_cycle_txt_remove_map() -> None:
+def test_parse_map_cycle_complex() -> None:
     s = """\
     ut4_abbey
+    {
+      g_gametype 7
+      g_gear KQS
+      timelimit 10
+    }
     ut4_casa
     ut4_paris
+    {
+      g_gametype    8
+      g_gear        0
+      timelimit     10
+    }
     """
-    actual = mapfiles.map_cycle_txt_remove(dedent(s), "ut4_tohunga_b8")
-    assert actual.strip() == dedent(s).strip()
-
-    expect = """\
-    ut4_abbey
-    ut4_paris
-    """
-    actual = mapfiles.map_cycle_txt_remove(dedent(s), "ut4_casa")
-    assert actual.strip() == dedent(expect).strip()
+    result = mapfiles.parse_map_entries(dedent(s))
+    assert len(result) == 3
+    assert result[0].map_name == "ut4_abbey"
+    assert result[0].map_options is not None
+    assert result[0].map_options["g_gear"] == "KQS"
+    assert result[1].map_name == "ut4_casa"
+    assert result[1].map_options is None
+    assert result[2].map_name == "ut4_paris"
+    assert result[2].map_options is not None
+    assert result[2].map_options["timelimit"] == "10"
+    assert result[2].map_options["g_gametype"] == "8"

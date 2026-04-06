@@ -1,4 +1,5 @@
 import contextlib
+import dataclasses
 import logging
 import urllib.parse
 from pathlib import Path
@@ -14,6 +15,12 @@ from . import settings
 logger = logging.getLogger(__name__)
 
 URTLI_DOWNLOAD_URL = "https://urt.li/q3ut4"
+
+
+@dataclasses.dataclass
+class MapCycleEntry:
+    map_name: str
+    map_options: dict[str, str] | None = None
 
 
 async def add_map_file(name: str) -> str:
@@ -98,32 +105,76 @@ async def upload_map_file(map_file: Path) -> str:
 async def map_cycle_add(
     map_name: str, pos: Literal["before", "after"], other_map: str | None
 ) -> str:
-    return f"not implemented yet: {map_name} - {pos} - {other_map}"
+    entries = await load_map_cycle_file(settings.mapcycle.file)
+    if [x for x in entries if x.map_name == map_name]:
+        return f"map file [{map_name}] already exists in the map cycle"
+
+    new_entry = MapCycleEntry(map_name=map_name)
+    new_entries = []
+    if other_map:
+        for entry in entries:
+            if entry.map_name == other_map:
+                if pos == "before":
+                    new_entries.append(new_entry)
+                    new_entries.append(entry)
+                else:
+                    new_entries.append(entry)
+                    new_entries.append(new_entry)
+            else:
+                new_entries.append(entry)
+
+    if not new_entries or len(new_entries) == len(entries):
+        if pos == "before":
+            new_entries = [new_entry, *entries]
+        else:
+            new_entries = [*entries, new_entry]
+
+    await save_map_cycle_file(settings.mapcycle.file, new_entries)
+    return f"map file [{map_name}] has been added to the map cycle"
 
 
 async def map_cycle_remove(map_name: str) -> str:
-    return f"not implemented yet: {map_name}"
+    entries = await load_map_cycle_file(settings.mapcycle.file)
+    new_entries = [e for e in entries if e.map_name != map_name]
+    if len(new_entries) == len(entries):
+        return f"map file [{map_name}] not found in map cycle"
+    await save_map_cycle_file(settings.mapcycle.file, new_entries)
+    return f"map file [{map_name}] has been removed from map cycle"
 
 
-def map_cycle_txt_add(
-    txt: str, map_name: str, pos: Literal["before", "after"], other_map: str | None
-) -> str:
-    result = []
-    if other_map is None and pos == "before":
-        result.append(map_name)
-    for line in txt.splitlines():
-        result.append(line)
-        if other_map and line.strip() == other_map:
-            result.append(map_name)
-    if other_map is None and pos == "after":
-        result.append(map_name)
-    return "\n".join(result)
+async def load_map_cycle_file(cycle_file: Path) -> list[MapCycleEntry]:
+    async with aiofiles.open(cycle_file, encoding="utf-8") as f:
+        s = await f.read()
+    return parse_map_entries(s)
 
 
-def map_cycle_txt_remove(txt: str, map_name: str) -> str:
-    result = []
-    for line in txt.splitlines():
-        if line.strip() == map_name:
+async def save_map_cycle_file(cycle_file: Path, entries: list[MapCycleEntry]) -> None:
+    async with aiofiles.open(cycle_file, mode="w", encoding="utf-8") as f:
+        for entry in entries:
+            await f.write(entry.map_name + "\n")
+            if entry.map_options:
+                await f.write("{\n")
+                for k, v in entry.map_options.items():
+                    await f.write(f"{k} {v}\n")
+                await f.write("}\n")
+
+
+def parse_map_entries(s: str) -> list[MapCycleEntry]:
+    entries = []
+    options: dict[str, str] | None = None
+    for line in s.splitlines():
+        if not (line := line.strip()):
             continue
-        result.append(line)
-    return "\n".join(result)
+        if line == "{":
+            options = {}
+        elif line == "}":
+            if not entries and options is None:
+                raise ValueError(s)
+            entries[-1].map_options = options
+            options = None
+        elif options is not None:
+            k, _, v = line.partition(" ")
+            options[k] = v.strip()
+        else:
+            entries.append(MapCycleEntry(map_name=line))
+    return entries
