@@ -40,6 +40,7 @@ class DiscordClient(discord.Client):
             password=settings.rcon.password,
             recv_timeout=settings.rcon.recv_timeout,
         )
+        self.embed_updaters: dict[str, DiscordEmbedUpdater] = {}
 
     @property
     def channel(self) -> discord.TextChannel:
@@ -86,6 +87,7 @@ class DiscordEmbedUpdater(abc.ABC):
     def __init__(self, client: DiscordClient, embed_title: str) -> None:
         self.client = client
         self.embed_title = embed_title
+        client.embed_updaters[self.__class__.__name__] = self
 
     async def fetch_embed_message(self) -> discord.Message | None:
         _, message = await self.client.fetch_embed_message(self.embed_title)
@@ -231,6 +233,8 @@ async def map_cycle_add(
     await interaction.response.defer(ephemeral=True, thinking=True)
     result = await mapfiles.map_cycle_add(map_name, pos, other_map)
     await interaction.followup.send(result)
+    if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
+        await updater.update()
     await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
 
@@ -246,6 +250,8 @@ async def map_cycle_remove(interaction: discord.Interaction, map_name: str) -> N
     await interaction.response.defer(ephemeral=True, thinking=True)
     result = await mapfiles.map_cycle_remove(map_name)
     await interaction.followup.send(result)
+    if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
+        await updater.update()
     await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
 

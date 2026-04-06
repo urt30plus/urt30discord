@@ -2,4 +2,4 @@
 Urban Terror |30+| UrT Discord Bot
 """
 
-__version__ = "2026.04.05"
+__version__ = "2026.04.06"
