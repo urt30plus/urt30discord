@@ -24,6 +24,8 @@ async def bot_info(interaction: discord.Interaction) -> None:
     Args:
         interaction: discord.Interaction
     """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+
     embed = discord.Embed(title="Bot Information")
     embed.colour = discord.Colour.green()
     embed.add_field(name="bot version", value=__version__, inline=False)
@@ -54,11 +56,10 @@ async def bot_info(interaction: discord.Interaction) -> None:
     embed.add_field(name="udp network stats", value=net_stats_udp, inline=False)
     embed.add_field(name="cpu stats", value=psutil.cpu_percent(), inline=False)
     embed.add_field(name="memory stats", value=psutil.virtual_memory(), inline=False)
-    await interaction.response.send_message(
-        embed=embed,
-        ephemeral=True,
-        delete_after=120.0,
-    )
+
+    await interaction.followup.send(embed=embed)
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
+    await interaction.delete_original_response()
 
 
 @discord_client.tree.command(name="bot-stop", guild=GUILD)
