@@ -1,14 +1,16 @@
 import asyncio
+import dataclasses
 import datetime
 import logging
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import aiofiles
 import aiofiles.os
 import discord
 from urt30arcon import GameType
 
+from . import settings
 from .core import DiscordClient, DiscordEmbedUpdater
 
 if TYPE_CHECKING:
@@ -17,6 +19,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 MapCycle = dict[str, dict[str, str]]
+
+
+@dataclasses.dataclass
+class MapCycleEntry:
+    map_name: str
+    map_options: dict[str, str] | None = None
 
 
 class MapCycleUpdater(DiscordEmbedUpdater):
@@ -138,3 +146,85 @@ def map_mode(map_opts: dict[str, str]) -> str:
         result += " Instagib"
 
     return "" if result == GameType.CTF.name else f"({result})"
+
+
+async def map_cycle_add(
+    map_name: str, pos: Literal["before", "after"], other_map: str | None
+) -> str:
+    entries = await load_map_cycle_file(settings.mapcycle.file)
+
+    map_to_add = map_name.strip().lower()
+    if [x for x in entries if x.map_name.lower() == map_to_add]:
+        return f"map file [{map_name}] already exists in the map cycle"
+
+    new_entry = MapCycleEntry(map_name=map_to_add)
+    new_entries = []
+    if other_map:
+        needle = other_map.strip().lower()
+        for entry in entries:
+            if entry.map_name.lower() == needle:
+                if pos == "before":
+                    new_entries.append(new_entry)
+                    new_entries.append(entry)
+                else:
+                    new_entries.append(entry)
+                    new_entries.append(new_entry)
+            else:
+                new_entries.append(entry)
+
+    if not new_entries or len(new_entries) == len(entries):
+        if pos == "before":
+            new_entries = [new_entry, *entries]
+        else:
+            new_entries = [*entries, new_entry]
+
+    await save_map_cycle_file(settings.mapcycle.file, new_entries)
+    return f"map file [{map_name}] has been added to the map cycle"
+
+
+async def map_cycle_remove(map_name: str) -> str:
+    entries = await load_map_cycle_file(settings.mapcycle.file)
+    map_to_remove = map_name.strip().lower()
+    new_entries = [e for e in entries if e.map_name.lower() != map_to_remove]
+    if len(new_entries) == len(entries):
+        return f"map file [{map_name}] not found in map cycle"
+    await save_map_cycle_file(settings.mapcycle.file, new_entries)
+    return f"map file [{map_name}] has been removed from map cycle"
+
+
+async def load_map_cycle_file(cycle_file: Path) -> list[MapCycleEntry]:
+    async with aiofiles.open(cycle_file, encoding="utf-8") as f:
+        s = await f.read()
+    return parse_map_entries(s)
+
+
+async def save_map_cycle_file(cycle_file: Path, entries: list[MapCycleEntry]) -> None:
+    async with aiofiles.open(cycle_file, mode="w", encoding="utf-8") as f:
+        for entry in entries:
+            await f.write(entry.map_name + "\n")
+            if entry.map_options:
+                await f.write("{\n")
+                for k, v in entry.map_options.items():
+                    await f.write(f"{k} {v}\n")
+                await f.write("}\n")
+
+
+def parse_map_entries(s: str) -> list[MapCycleEntry]:
+    entries = []
+    options: dict[str, str] | None = None
+    for line in s.splitlines():
+        if not (line := line.strip()):
+            continue
+        if line == "{":
+            options = {}
+        elif line == "}":
+            if not entries and options is None:
+                raise ValueError(s)
+            entries[-1].map_options = options
+            options = None
+        elif options is not None:
+            k, _, v = line.partition(" ")
+            options[k] = v.strip()
+        else:
+            entries.append(MapCycleEntry(map_name=line))
+    return entries

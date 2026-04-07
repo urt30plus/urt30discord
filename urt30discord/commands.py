@@ -7,7 +7,7 @@ from typing import Literal
 import discord
 import psutil
 
-from . import __version__, mapfiles, settings
+from . import __version__, mapcycle, mapfiles, settings
 from .core import GUILD, discord_client
 
 CMD_RESP_EXPIRY = 10.0
@@ -118,7 +118,7 @@ async def map_cycle_add(
         await interaction.delete_original_response()
         return
 
-    result = await mapfiles.map_cycle_add(map_name, pos, other_map)
+    result = await mapcycle.map_cycle_add(map_name, pos, other_map)
     await interaction.followup.send(result)
     if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
         await updater.update()
@@ -152,7 +152,7 @@ async def map_cycle_remove(interaction: discord.Interaction, map_name: str) -> N
         map_name: name of map to remove from the map cycle
     """
     await interaction.response.defer(ephemeral=True, thinking=True)
-    result = await mapfiles.map_cycle_remove(map_name)
+    result = await mapcycle.map_cycle_remove(map_name)
     await interaction.followup.send(result)
     if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
         await updater.update()
