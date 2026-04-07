@@ -206,28 +206,6 @@ async def map_list(interaction: discord.Interaction) -> None:
     await interaction.delete_original_response()
 
 
-async def _net_stats_udp() -> str:
-    proc = await asyncio.create_subprocess_exec(
-        "/usr/bin/netstat",
-        "-suna",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-    if stderr:
-        logger.error(stderr)
-    data = stdout.decode().splitlines()
-    text = None
-    for line in data:
-        if (line := line.strip()) == "Udp:":
-            text = []
-        elif line == "UdpLite:":
-            break
-        elif text is not None:
-            text.append(line)
-    return "```" + "\n".join(text or []) + "```"
-
-
 @discord_client.tree.command(name="map-set-next", guild=GUILD)
 async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
     """Set the next map.
@@ -251,6 +229,28 @@ async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
             ephemeral=True,
             delete_after=CMD_RESP_EXPIRY,
         )
+
+
+async def _net_stats_udp() -> str:
+    proc = await asyncio.create_subprocess_exec(
+        "/usr/bin/netstat",
+        "-suna",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await proc.communicate()
+    if stderr:
+        logger.error(stderr)
+    data = stdout.decode().splitlines()
+    text = None
+    for line in data:
+        if (line := line.strip()) == "Udp:":
+            text = []
+        elif line == "UdpLite:":
+            break
+        elif text is not None:
+            text.append(line)
+    return "```" + "\n".join(text or []) + "```"
 
 
 @functools.cache
