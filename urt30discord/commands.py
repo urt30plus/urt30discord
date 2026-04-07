@@ -17,6 +17,50 @@ EMBED_DESCR_CHAR_LIMIT = 4_096
 logger = logging.getLogger(__name__)
 
 
+@discord_client.tree.command(name="bot-info", guild=GUILD)
+async def bot_info(interaction: discord.Interaction) -> None:
+    """Information about the bot.
+
+    Args:
+        interaction: discord.Interaction
+    """
+    embed = discord.Embed(title="Bot Information")
+    embed.colour = discord.Colour.green()
+    embed.add_field(name="bot version", value=__version__, inline=False)
+    embed.add_field(name="discord-py version", value=discord.__version__, inline=False)
+    embed.add_field(name="bot user", value=discord_client.bot_user, inline=False)
+    embed.add_field(
+        name="updaters channel", value=discord_client.channel.name, inline=False
+    )
+    embed.add_field(name="rcon client", value=f"{discord_client.rcon!r}", inline=False)
+    embed.add_field(
+        name="asyncio.loop", value=f"{asyncio.get_running_loop()!r}", inline=False
+    )
+    embed.add_field(
+        name="gameinfo updater enabled", value=settings.gameinfo.enabled, inline=False
+    )
+    embed.add_field(
+        name="mapcycle updater enabled", value=settings.mapcycle.enabled, inline=False
+    )
+    embed.add_field(name="bot boot time", value=settings.STARTED_AT, inline=False)
+    embed.add_field(name="system boot time", value=_sys_boot_time(), inline=False)
+    async with asyncio.timeout(1.0):
+        try:
+            net_stats_udp = await _net_stats_udp()
+        except TimeoutError:
+            net_stats_udp = "timed out"
+        except Exception as exc:
+            net_stats_udp = f"failed: {exc!r}"
+    embed.add_field(name="udp network stats", value=net_stats_udp, inline=False)
+    embed.add_field(name="cpu stats", value=psutil.cpu_percent(), inline=False)
+    embed.add_field(name="memory stats", value=psutil.virtual_memory(), inline=False)
+    await interaction.response.send_message(
+        embed=embed,
+        ephemeral=True,
+        delete_after=120.0,
+    )
+
+
 @discord_client.tree.command(name="bot-stop", guild=GUILD)
 async def bot_stop(interaction: discord.Interaction) -> None:
     """Stops the bot (and possibly restarts it).
@@ -44,6 +88,73 @@ async def map_add(interaction: discord.Interaction, name: str) -> None:
     await interaction.response.defer(ephemeral=True, thinking=True)
     result = await mapfiles.add_map_file(name)
     await interaction.followup.send(result)
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
+    await interaction.delete_original_response()
+
+
+@discord_client.tree.command(name="map-cycle-add", guild=GUILD)
+async def map_cycle_add(
+    interaction: discord.Interaction,
+    map_name: str,
+    pos: Literal["before", "after"],
+    other_map: str | None = None,
+) -> None:
+    """Adds the map to the mapcycle.
+
+    Args:
+        interaction: discord.Interaction
+        map_name: name of map to add to the map cycle
+        pos: position to add the new map
+        other_map: position relative to this map for insertion
+    """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+
+    if not await _map_exists_on_server(map_name):
+        await interaction.followup.send(
+            f"map `{map_name}` is not available on the server"
+        )
+        await asyncio.sleep(CMD_RESP_EXPIRY)
+        await interaction.delete_original_response()
+        return
+
+    result = await mapfiles.map_cycle_add(map_name, pos, other_map)
+    await interaction.followup.send(result)
+    if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
+        await updater.update()
+    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
+    await interaction.delete_original_response()
+
+
+@discord_client.tree.command(name="map-cycle-next", guild=GUILD)
+async def map_cycle_next(interaction: discord.Interaction) -> None:
+    """Cycle to the next map.
+
+    Args:
+        interaction: discord.Interaction
+    """
+    await discord_client.rcon.cycle_map()
+    await interaction.response.send_message(
+        "cycling to next map",
+        ephemeral=True,
+        delete_after=CMD_RESP_EXPIRY,
+    )
+    if updater := discord_client.embed_updaters.get("GameInfoUpdater"):
+        await updater.update()
+
+
+@discord_client.tree.command(name="map-cycle-remove", guild=GUILD)
+async def map_cycle_remove(interaction: discord.Interaction, map_name: str) -> None:
+    """Removes the map to the mapcycle.
+
+    Args:
+        interaction: discord.Interaction
+        map_name: name of map to remove from the map cycle
+    """
+    await interaction.response.defer(ephemeral=True, thinking=True)
+    result = await mapfiles.map_cycle_remove(map_name)
+    await interaction.followup.send(result)
+    if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
+        await updater.update()
     await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
 
@@ -94,21 +205,26 @@ async def map_list(interaction: discord.Interaction) -> None:
     await interaction.delete_original_response()
 
 
-@discord_client.tree.command(name="map-cycle-next", guild=GUILD)
-async def map_cycle_next(interaction: discord.Interaction) -> None:
-    """Cycle to the next map.
-
-    Args:
-        interaction: discord.Interaction
-    """
-    await discord_client.rcon.cycle_map()
-    await interaction.response.send_message(
-        "cycling to next map",
-        ephemeral=True,
-        delete_after=CMD_RESP_EXPIRY,
+async def _net_stats_udp() -> str:
+    proc = await asyncio.create_subprocess_exec(
+        "/usr/bin/netstat",
+        "-suna",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
     )
-    if updater := discord_client.embed_updaters.get("GameInfoUpdater"):
-        await updater.update()
+    stdout, stderr = await proc.communicate()
+    if stderr:
+        logger.error(stderr)
+    data = stdout.decode().splitlines()
+    text = None
+    for line in data:
+        if (line := line.strip()) == "Udp:":
+            text = []
+        elif line == "UdpLite:":
+            break
+        elif text is not None:
+            text.append(line)
+    return "```" + "\n".join(text or []) + "```"
 
 
 @discord_client.tree.command(name="map-set-next", guild=GUILD)
@@ -134,122 +250,6 @@ async def map_set_next(interaction: discord.Interaction, map_name: str) -> None:
             ephemeral=True,
             delete_after=CMD_RESP_EXPIRY,
         )
-
-
-@discord_client.tree.command(name="map-cycle-add", guild=GUILD)
-async def map_cycle_add(
-    interaction: discord.Interaction,
-    map_name: str,
-    pos: Literal["before", "after"],
-    other_map: str | None = None,
-) -> None:
-    """Adds the map to the mapcycle.
-
-    Args:
-        interaction: discord.Interaction
-        map_name: name of map to add to the map cycle
-        pos: position to add the new map
-        other_map: position relative to this map for insertion
-    """
-    await interaction.response.defer(ephemeral=True, thinking=True)
-
-    if not await _map_exists_on_server(map_name):
-        await interaction.followup.send(
-            f"map `{map_name}` is not available on the server"
-        )
-        await asyncio.sleep(CMD_RESP_EXPIRY)
-        await interaction.delete_original_response()
-        return
-
-    result = await mapfiles.map_cycle_add(map_name, pos, other_map)
-    await interaction.followup.send(result)
-    if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
-        await updater.update()
-    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
-    await interaction.delete_original_response()
-
-
-@discord_client.tree.command(name="map-cycle-remove", guild=GUILD)
-async def map_cycle_remove(interaction: discord.Interaction, map_name: str) -> None:
-    """Removes the map to the mapcycle.
-
-    Args:
-        interaction: discord.Interaction
-        map_name: name of map to remove from the map cycle
-    """
-    await interaction.response.defer(ephemeral=True, thinking=True)
-    result = await mapfiles.map_cycle_remove(map_name)
-    await interaction.followup.send(result)
-    if updater := discord_client.embed_updaters.get("MapCycleUpdater"):
-        await updater.update()
-    await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
-    await interaction.delete_original_response()
-
-
-@discord_client.tree.command(name="bot-info", guild=GUILD)
-async def bot_info(interaction: discord.Interaction) -> None:
-    """Information about the bot.
-
-    Args:
-        interaction: discord.Interaction
-    """
-    embed = discord.Embed(title="Bot Information")
-    embed.colour = discord.Colour.green()
-    embed.add_field(name="bot version", value=__version__, inline=False)
-    embed.add_field(name="discord-py version", value=discord.__version__, inline=False)
-    embed.add_field(name="bot user", value=discord_client.bot_user, inline=False)
-    embed.add_field(
-        name="updaters channel", value=discord_client.channel.name, inline=False
-    )
-    embed.add_field(name="rcon client", value=f"{discord_client.rcon!r}", inline=False)
-    embed.add_field(
-        name="asyncio.loop", value=f"{asyncio.get_running_loop()!r}", inline=False
-    )
-    embed.add_field(
-        name="gameinfo updater enabled", value=settings.gameinfo.enabled, inline=False
-    )
-    embed.add_field(
-        name="mapcycle updater enabled", value=settings.mapcycle.enabled, inline=False
-    )
-    embed.add_field(name="bot boot time", value=settings.STARTED_AT, inline=False)
-    embed.add_field(name="system boot time", value=_sys_boot_time(), inline=False)
-    async with asyncio.timeout(1.0):
-        try:
-            net_stats_udp = await _net_stats_udp()
-        except TimeoutError:
-            net_stats_udp = "timed out"
-        except Exception as exc:
-            net_stats_udp = f"failed: {exc!r}"
-    embed.add_field(name="udp network stats", value=net_stats_udp, inline=False)
-    embed.add_field(name="cpu stats", value=psutil.cpu_percent(), inline=False)
-    embed.add_field(name="memory stats", value=psutil.virtual_memory(), inline=False)
-    await interaction.response.send_message(
-        embed=embed,
-        ephemeral=True,
-        delete_after=120.0,
-    )
-
-
-async def _net_stats_udp() -> str:
-    proc = await asyncio.create_subprocess_exec(
-        "/usr/bin/netstat",
-        "-suna",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-    if stderr:
-        logger.error(stderr)
-    data = stdout.decode().splitlines()
-    text = None
-    for line in data:
-        if (line := line.strip()) == "Udp:":
-            text = []
-        elif line == "UdpLite:":
-            break
-        elif text is not None:
-            text.append(line)
-    return "```" + "\n".join(text or []) + "```"
 
 
 @functools.cache
