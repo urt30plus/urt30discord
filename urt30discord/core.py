@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 GUILD = discord.Object(id=settings.bot.server_id)
 CMD_RESP_EXPIRY = 10.0
 CMD_RESP_EXPIRY_DEFER = 60.0
+EMBED_DESCR_CHAR_LIMIT = 4_096
 
 
 class DiscordClientError(Exception):
@@ -178,8 +179,39 @@ async def map_list(interaction: discord.Interaction) -> None:
     """
     await interaction.response.defer(ephemeral=True, thinking=True)
     all_maps = await discord_client.rcon.maps()
-    result = "* " + "\n* ".join(all_maps)
-    await interaction.followup.send(result)
+    # find the longest map name so we can pad the embed to this many chars
+    # so all embeds are spaced the same
+    padding = sorted(len(x) for x in all_maps)[-1]
+    # Discord message limits (2,000 chars) are too restrictive for servers
+    # with a large number of maps, so embeds are used instead. Embed
+    # descriptions are limited to 4,096 characters. If the map list exceeds
+    # that limit, then multiple embeds are created.
+    embeds = []
+    current_maps = ""
+    for m in all_maps:
+        if (len(current_maps) + len(m) + 10) > EMBED_DESCR_CHAR_LIMIT:
+            embeds.append(
+                discord.Embed(
+                    colour=discord.Colour.dark_orange(),
+                    description=f"```\n{current_maps}\n```",
+                )
+            )
+            current_maps = f"{m:{padding}}\n"
+            continue
+        if current_maps:
+            current_maps += f"{m}\n"
+        else:
+            # just pad the first map, so we don't waste our limit on padding
+            current_maps += f"{m:{padding}}\n"
+    if current_maps:
+        embeds.append(
+            discord.Embed(
+                colour=discord.Colour.dark_orange(),
+                description=f"```\n{current_maps}\n```",
+            )
+        )
+
+    await interaction.followup.send(embeds=embeds)
     await asyncio.sleep(CMD_RESP_EXPIRY_DEFER)
     await interaction.delete_original_response()
 
