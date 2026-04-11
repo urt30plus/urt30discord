@@ -5,8 +5,6 @@ import logging
 import time
 from typing import TYPE_CHECKING, Literal
 
-import aiofiles
-import aiofiles.os
 import discord
 from urt30arcon import GameType
 
@@ -67,7 +65,7 @@ class MapCycleUpdater(DiscordEmbedUpdater):
         return curr_txt.strip() != new_txt.strip()
 
     async def file_not_changed(self) -> bool:
-        stats = await aiofiles.os.stat(self.mapcycle_file)
+        stats = await asyncio.to_thread(self.mapcycle_file.stat)
         if stats.st_mtime == self.last_mtime:
             return True
 
