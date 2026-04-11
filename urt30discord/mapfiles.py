@@ -1,10 +1,9 @@
+import asyncio
 import contextlib
 import logging
 import urllib.parse
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, BinaryIO, cast
 
-import aiofiles
-import aiofiles.os
 import aiohttp
 import asyncssh
 
@@ -17,10 +16,12 @@ logger = logging.getLogger(__name__)
 
 URTLI_DOWNLOAD_URL = "https://urt.li/q3ut4"
 
+DOWNLOAD_CHUNK_SIZE = 4096 * 1024  # 4MB
+
 
 async def add_map_file(name: str) -> str:
     map_file = (settings.mapfiles.path / name).with_suffix(".pk3").resolve()
-    if await aiofiles.os.path.exists(str(map_file)):
+    if await asyncio.to_thread(map_file.exists):
         return f"map file [{map_file}] already exists on the server"
     map_url = f"{settings.mapfiles.downloads_url}/{map_file.name}"
     tmp_file = map_file.with_suffix(".tmp")
@@ -50,26 +51,30 @@ async def add_map_file(name: str) -> str:
         )
     else:
         logger.info("moving [%s] to [%s]", tmp_file, map_file)
-        await aiofiles.os.rename(tmp_file, map_file)
-        stats = await aiofiles.os.stat(map_file)
+        await asyncio.to_thread(tmp_file.rename, map_file)
+        stats = await asyncio.to_thread(map_file.stat)
         results.append(f"added file {map_file} (size {stats.st_size:,})")
     finally:
         with contextlib.suppress(FileNotFoundError):
-            await aiofiles.os.unlink(tmp_file)
+            await asyncio.to_thread(tmp_file.unlink)
 
     return "* " + "\n* ".join(results)
 
 
 async def download_file(url: str, path: Path) -> None:
     logger.info("attempting to download [%s] to [%s]", url, path)
-    async with (
-        aiofiles.open(path, "wb") as fp,
-        aiohttp.ClientSession() as session,
-        session.get(url) as r,
-    ):
-        r.raise_for_status()
-        async for chunk in r.content.iter_chunked(1024 * 1024):
-            await fp.write(chunk)
+    fp = await asyncio.to_thread(path.open, mode="wb")
+    fp = cast("BinaryIO", fp)
+    try:
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(url) as r,
+        ):
+            r.raise_for_status()
+            async for chunk in r.content.iter_chunked(DOWNLOAD_CHUNK_SIZE):
+                await asyncio.to_thread(fp.write, chunk)
+    finally:
+        await asyncio.to_thread(fp.close)
 
 
 async def upload_map_file(map_file: Path) -> str:
