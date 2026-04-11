@@ -21,16 +21,16 @@ def test_parse_map_cycle_complex() -> None:
     s = """\
     ut4_abbey
     {
-      g_gametype 7
+      g_gametype "7"
       g_gear KQS
-      timelimit 10
+      timelimit "10"
     }
     ut4_casa
     ut4_paris
     {
-      g_gametype    8
-      g_gear        0
-      timelimit     10
+      g_gametype    "8"
+      g_gear        "0"
+      timelimit     "10"
     }
     """
     result = mapcycle.parse_map_entries(dedent(s))

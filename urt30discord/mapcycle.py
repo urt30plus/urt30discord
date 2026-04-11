@@ -18,8 +18,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-MapCycle = dict[str, dict[str, str]]
-
 
 @dataclasses.dataclass
 class MapCycleEntry:
@@ -75,45 +73,22 @@ class MapCycleUpdater(DiscordEmbedUpdater):
 async def create_embed(mapcycle_file: Path, embed_title: str) -> discord.Embed:
     logger.debug("Creating map cycle embed from: %s", mapcycle_file)
     try:
-        cycle = await parse_mapcycle(mapcycle_file)
+        cycle = await load_map_cycle_file(mapcycle_file)
     except Exception:
         logger.exception("Failed to parse map cycle file: %s", mapcycle_file)
-        cycle = {}
+        cycle = []
     return create_mapcycle_embed(cycle, embed_title)
 
 
-async def parse_mapcycle(mapcycle_file: Path) -> MapCycle:
-    async with aiofiles.open(mapcycle_file, encoding="utf-8") as f:
-        lines = await f.readlines()
-    return parse_mapcycle_lines(lines)
-
-
-def parse_mapcycle_lines(lines: list[str]) -> MapCycle:
-    result: MapCycle = {}
-    map_name = ""
-    map_config = None
-    for raw_line in lines:
-        line = raw_line.strip()
-        if not line or line.startswith("//"):
-            continue
-        if line == "{":
-            map_config = result[map_name]
-        elif line == "}":
-            map_config = None
-        elif map_config is None:
-            map_name = line
-            result[map_name] = {}
-        else:
-            k, v = line.split(" ", maxsplit=1)
-            map_config[k.strip()] = v.strip().strip("\"'")
-    return result
-
-
-def create_mapcycle_embed(cycle: MapCycle, embed_title: str) -> discord.Embed:
+def create_mapcycle_embed(
+    cycle: list[MapCycleEntry], embed_title: str
+) -> discord.Embed:
     if cycle:
         descr = (
             "```\n"
-            + "\n".join([f"{k:24} {map_mode(v):20}" for k, v in cycle.items()])
+            + "\n".join([
+                f"{e.map_name:24} {map_mode(e.map_options):20}" for e in cycle
+            ])
             + "```"
         )
         color = discord.Colour.blue()
@@ -134,18 +109,27 @@ def create_mapcycle_embed(cycle: MapCycle, embed_title: str) -> discord.Embed:
     return embed
 
 
-def map_mode(map_opts: dict[str, str]) -> str:
-    if map_opts.get("mod_gungame", "0") == "1":
+def map_mode(map_opts: dict[str, str] | None) -> str:
+    if not map_opts:
+        return ""
+    game_type = map_opts.get("g_gametype")
+    # d3mod Gungame uses a g_gametype of FFA (0)
+    if game_type == GameType.FFA.value and map_opts.get("mod_gungame", "0") == "1":
         result = GameType.GUNGAME.name + " d3mod"
-    elif map_opts.get("mod_ctf", "0") == "1":
+    elif game_type == GameType.CTF.value and map_opts.get("mod_ctf", "0") == "1":
         result = GameType.CTF.name + " d3mod"
-    else:
-        game_type = map_opts.get("g_gametype", GameType.CTF.value)
+    elif (game_type := map_opts.get("g_gametype")) not in {
+        GameType.CTF.value,
+        GameType.TS.value,
+    }:
+        # show game type for non-standard modes
         result = GameType(game_type).name
+    else:
+        result = ""
     if map_opts.get("g_instagib") == "1":
-        result += " Instagib"
+        result += " Instagib" if result else "Instagib"
 
-    return "" if result == GameType.CTF.name else f"({result})"
+    return f"({result})" if result else ""
 
 
 async def map_cycle_add(
@@ -205,7 +189,7 @@ async def save_map_cycle_file(cycle_file: Path, entries: list[MapCycleEntry]) ->
             if entry.map_options:
                 await f.write("{\n")
                 for k, v in entry.map_options.items():
-                    await f.write(f"{k} {v}\n")
+                    await f.write(f'{k} "{v}"\n')
                 await f.write("}\n")
 
 
@@ -213,7 +197,7 @@ def parse_map_entries(s: str) -> list[MapCycleEntry]:
     entries = []
     options: dict[str, str] | None = None
     for line in s.splitlines():
-        if not (line := line.strip()):
+        if not (line := line.strip()) or line.startswith("//"):
             continue
         if line == "{":
             options = {}
@@ -224,7 +208,7 @@ def parse_map_entries(s: str) -> list[MapCycleEntry]:
             options = None
         elif options is not None:
             k, _, v = line.partition(" ")
-            options[k] = v.strip()
+            options[k.lower()] = v.strip().strip("\"'")
         else:
             entries.append(MapCycleEntry(map_name=line))
     return entries
