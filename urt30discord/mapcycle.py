@@ -177,9 +177,8 @@ async def map_cycle_remove(map_name: str) -> str:
 
 
 async def load_map_cycle_file(cycle_file: Path) -> list[MapCycleEntry]:
-    async with aiofiles.open(cycle_file, encoding="utf-8") as f:
-        s = await f.read()
-    return parse_map_entries(s)
+    data = await asyncio.to_thread(cycle_file.read_text, encoding="utf-8")
+    return parse_map_entries(data)
 
 
 async def save_map_cycle_file(cycle_file: Path, entries: list[MapCycleEntry]) -> None:
