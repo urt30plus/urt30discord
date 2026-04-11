@@ -24,6 +24,18 @@ class MapCycleEntry:
     map_name: str
     map_options: dict[str, str] | None = None
 
+    def __str__(self) -> str:
+        s = self.map_name
+        if self.map_options:
+            s += "\n{\n"
+            for k, v in self.map_options.items():
+                s += f'{k} "{v}"\n'
+            s += "}\n"
+        return s
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.map_name})"
+
 
 class MapCycleUpdater(DiscordEmbedUpdater):
     def __init__(
@@ -182,14 +194,8 @@ async def load_map_cycle_file(cycle_file: Path) -> list[MapCycleEntry]:
 
 
 async def save_map_cycle_file(cycle_file: Path, entries: list[MapCycleEntry]) -> None:
-    async with aiofiles.open(cycle_file, mode="w", encoding="utf-8") as f:
-        for entry in entries:
-            await f.write(entry.map_name + "\n")
-            if entry.map_options:
-                await f.write("{\n")
-                for k, v in entry.map_options.items():
-                    await f.write(f'{k} "{v}"\n')
-                await f.write("}\n")
+    data = "\n".join(f"{e}" for e in entries)
+    await asyncio.to_thread(cycle_file.write_text, data, encoding="utf-8")
 
 
 def parse_map_entries(s: str) -> list[MapCycleEntry]:

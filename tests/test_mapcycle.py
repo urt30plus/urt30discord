@@ -44,3 +44,21 @@ def test_parse_map_cycle_complex() -> None:
     assert result[2].map_options is not None
     assert result[2].map_options["timelimit"] == "10"
     assert result[2].map_options["g_gametype"] == "8"
+
+
+def test_mapcycle_entry_str() -> None:
+    entry = mapcycle.MapCycleEntry(
+        map_name="ut4_abbey",
+        map_options={
+            "g_gear": "KQS",
+            "timelimit": "10",
+        },
+    )
+    expect = """\
+    ut4_abbey
+    {
+    g_gear "KQS"
+    timelimit "10"
+    }
+    """
+    assert str(entry) == dedent(expect)
