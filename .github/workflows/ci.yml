@@ -11,18 +11,10 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.14"]
-    name: Python ${{ matrix.python-version }} Checks
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-          architecture: x64
       - uses: astral-sh/setup-uv@v7
       - name: install dependencies
-        run: uv sync --frozen --no-python-downloads
+        run: uv sync --frozen
       - name: run checks
         run: bash run_checks.sh
