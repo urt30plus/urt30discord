@@ -18,9 +18,9 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "prek>=0.4.8",
+    "prek>=0.4.9",
     "pytest>=9.1.1",
-    "ty>=0.0.57",
+    "ty>=0.0.59",
     "watchfiles>=1.2.0",
 ]
 
