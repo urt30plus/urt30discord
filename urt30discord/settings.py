@@ -15,9 +15,6 @@ from pydantic import BaseModel, DirectoryPath, Field, FilePath, HttpUrl
 type DiscordUser = Annotated[str, Field(pattern=r"^.*#\d+$")]
 type Snowflake = Annotated[int, Field(gt=0)]
 
-PACKAGE_ROOT = Path(__file__).parent
-PROJECT_ROOT = PACKAGE_ROOT.parent
-
 
 class BotSettings(BaseModel, frozen=True):
     user: DiscordUser
