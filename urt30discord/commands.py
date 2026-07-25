@@ -171,7 +171,7 @@ async def map_list(interaction: discord.Interaction) -> None:
     all_maps = await discord_client.rcon.maps()
     # find the longest map name so we can pad the embed to this many chars
     # so all embeds are spaced the same
-    padding = sorted(len(x) for x in all_maps)[-1]
+    padding = max(len(x) for x in all_maps)
     # Discord message limits (2,000 chars) are too restrictive for servers
     # with a large number of maps, so embeds are used instead. Embed
     # descriptions are limited to 4,096 characters. If the map list exceeds
